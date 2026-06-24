@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SoulLock Pixel</title>
+    <title>SoulLock</title>
     <style>
         @import url('https://googleapis.com');
 
@@ -12,7 +12,7 @@
             text-align: center; 
             background: #05070f; 
             color: #38bdf8; 
-            padding-top: 30px; 
+            padding-top: 50px; 
             margin: 0;
             overflow: hidden;
             transition: background 0.4s;
@@ -22,20 +22,23 @@
         
         /* FULL SCREEN OLED ECO MODE */
         body.eco-mode { background: #000000 !important; }
-        body.eco-mode button, body.eco-mode #timer, body.eco-mode #collection, body.eco-mode #timeSelector {
+        body.eco-mode button, body.eco-mode #timer, body.eco-mode #collection {
             opacity: 0 !important;
             pointer-events: none;
         }
         body.eco-mode #incubator { 
-            transform: scale(0.5); 
+            transform: scale(0.45); 
             background: transparent !important;
             border-color: rgba(56, 189, 248, 0.2) !important;
             box-shadow: none !important;
         }
+        body.eco-mode #mainSprite {
+            filter: brightness(0) invert(1) drop-shadow(0 0 4px #38bdf8);
+        }
 
         #incubator {
-            width: 140px; height: 140px;
-            margin: 20px auto;
+            width: 150px; height: 150px;
+            margin: 30px auto;
             background: #0f172a;
             border: 4px solid #38bdf8;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
@@ -43,52 +46,27 @@
             display: flex; align-items: center; justify-content: center;
         }
         
-        /* Das Pixel-Art Zeichenfeld */
-        .pixel-art {
-            width: 8px;
-            height: 8px;
-            background: transparent;
-            transform: translate(-32px, -32px); /* Zentrierung der 8x8 Matrix */
+        #mainSprite {
+            width: 110px; height: 110px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
         
         #timer { 
-            font-size: 28px; 
-            margin: 20px 0; 
+            font-size: 32px; 
+            margin: 30px 0; 
             color: #38bdf8; 
             transition: opacity 0.3s; 
         }
-
-        /* Zeit-Auswahl-Matrix */
-        #timeSelector {
-            margin: 15px 0;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .time-tab {
-            background: #0f172a;
-            border: 2px solid #1e293b;
-            color: #475569;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-        .time-tab.active {
-            border-color: #38bdf8;
-            color: #38bdf8;
-            background: #111827;
-        }
         
-        /* Pure 8-Bit Pixel Buttons */
         button {
             background: #0f172a; 
             color: #38bdf8; 
             border: 4px solid #38bdf8;
             font-family: 'Press Start 2P', monospace;
-            font-size: 24px;
-            width: 70px; height: 70px;
-            cursor: pointer; margin: 5px;
+            font-size: 28px;
+            width: 75px; height: 75px;
+            cursor: pointer; margin: 10px;
             transition: all 0.1s;
             box-shadow: 4px 4px 0px #1e293b;
             display: inline-flex; align-items: center; justify-content: center;
@@ -99,27 +77,22 @@
         }
         
         #collection {
-            margin-top: 30px;
+            margin-top: 50px;
             padding: 15px;
             background: #090c14;
             border-top: 4px dashed rgba(56, 189, 248, 0.2);
-            min-height: 100px;
+            min-height: 120px;
             transition: opacity 0.3s;
             overflow-x: auto;
             white-space: nowrap;
         }
-        
-        /* Mini-Boxen für die gesammelten CSS-Monster */
-        .pet-box {
-            width: 45px; height: 45px;
-            display: inline-flex;
-            align-items: center; justify-content: center;
+        .pet-icon {
+            width: 50px; height: 50px;
+            display: inline-block;
             margin: 5px;
             background: #0f172a;
             border: 2px solid rgba(56, 189, 248, 0.3);
-        }
-        .pet-box .pixel-art {
-            transform: scale(0.4) translate(-45px, -45px);
+            image-rendering: pixelated;
         }
         
         #screen-click-trigger {
@@ -134,14 +107,7 @@
     <div id="screen-click-trigger" onclick="toggleEcoMode()"></div>
     
     <div id="incubator">
-        <div id="pixelCanvas" class="pixel-art"></div>
-    </div>
-
-    <div id="timeSelector">
-        <div class="time-tab active" onclick="setTimerPreset(10, this)">10S</div>
-        <div class="time-tab" onclick="setTimerPreset(900, this)">15M</div>
-        <div class="time-tab" onclick="setTimerPreset(1800, this)">30M</div>
-        <div class="time-tab" onclick="setTimerPreset(2700, this)">45M</div>
+        <img id="mainSprite" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="status">
     </div>
     
     <div id="timer">00:10</div>
@@ -154,15 +120,12 @@
     </div>
 
     <script>
-        // PURE 8x8 CUSTOM CSS PIXEL ART MATRIZEN
-        const PIXELS = {
-            EGG: "24px 0 #fff, 32px 0 #fff, 16px 8px #fff, 40px 8px #fff, 8px 16px #fff, 48px 16px #fff, 8px 24px #fff, 48px 24px #fff, 8px 32px #fff, 48px 32px #fff, 16px 40px #fff, 40px 40px #fff, 24px 48px #fff, 32px 48px #fff",
-            FAIL: "0 0 #f87171, 56px 0 #f87171, 8px 8px #f87171, 48px 8px #f87171, 16px 16px #f87171, 40px 16px #f87171, 24px 24px #f87171, 32px 24px #f87171, 24px 32px #f87171, 32px 32px #f87171, 16px 40px #f87171, 40px 40px #f87171, 8px 48px #f87171, 48px 48px #f87171, 0 56px #f87171, 56px 56px #f87171",
-            M1: "16px 0 #4ade80, 24px 0 #4ade80, 32px 0 #4ade80, 40px 0 #4ade80, 8px 8px #4ade80, 24px 8px #000, 40px 8px #000, 48px 8px #4ade80, 0 16px #4ade80, 56px 16px #4ade80, 0 24px #4ade80, 24px 24px #000, 32px 24px #000, 56px 24px #4ade80, 0 32px #4ade80, 56px 32px #4ade80, 8px 40px #4ade80, 48px 40px #4ade80, 0 48px #4ade80, 24px 48px #4ade80, 32px 48px #4ade80, 56px 48px #4ade80",
-            M2: "8px 0 #a182ff, 48px 0 #a182ff, 8px 8px #a182ff, 24px 8px #a182ff, 32px 8px #a182ff, 48px 8px #a182ff, 0 16px #a182ff, 16px 16px #000, 40px 16px #000, 56px 16px #a182ff, 0 24px #a182ff, 56px 24px #a182ff, 8px 32px #a182ff, 24px 32px #a182ff, 32px 32px #a182ff, 48px 32px #a182ff, 16px 40px #a182ff, 40px 40px #a182ff, 8px 48px #a182ff, 48px 48px #a182ff",
-            M3: "32px 0 #facc15, 24px 8px #facc15, 32px 8px #facc15, 16px 16px #facc15, 32px 16px #facc15, 40px 16px #facc15, 8px 24px #facc15, 24px 24px #facc15, 32px 24px #facc15, 16px 32px #facc15, 32px 32px #facc15, 48px 32px #facc15, 24px 40px #facc15, 32px 40px #facc15, 32px 48px #facc15",
-            M4: "0 0 #38bdf8, 56px 0 #38bdf8, 0 8px #38bdf8, 16px 8px #38bdf8, 40px 8px #38bdf8, 56px 8px #38bdf8, 8px 16px #38bdf8, 24px 16px #38bdf8, 32px 16px #38bdf8, 48px 16px #38bdf8, 0 24px #38bdf8, 16px 24px #000, 40px 24px #000, 56px 24px #38bdf8, 0 32px #38bdf8, 16px 32px #38bdf8, 24px 32px #38bdf8, 32px 32px #38bdf8, 40px 32px #38bdf8, 56px 32px #38bdf8, 16px 40px #38bdf8, 40px 40px #38bdf8, 8px 48px #38bdf8, 48px 48px #38bdf8"
-        };
+        // Nutzt dein hochgeladenes Fragezeichen als Start-Ei
+        const EGG_SPRITE = "0.png";
+        const FAIL_SPRITE = "fail.png"; 
+        
+        // Der Pool aus deinen drei verfügbaren Start-Pokémon
+        const MONSTER_IMAGES = ["1.png", "4.png", "7.png"];
 
         let duration = 10; 
         let lastTime = Date.now();
@@ -170,51 +133,30 @@
         let isShattered = false;
         let wakeLock = null;
 
-        const canvas = document.getElementById('pixelCanvas');
+        const spriteImg = document.getElementById('mainSprite');
 
         window.addEventListener('load', () => {
             updateCollectionUI();
-            const savedState = localStorage.getItem('pixelFocus_state');
+            const savedState = localStorage.getItem('pet151_state');
             
             if (savedState === 'RUNNING' || savedState === 'SHATTERED') {
                 shatterEgg();
             } else {
-                drawPixelArt(PIXELS.EGG);
+                spriteImg.src = EGG_SPRITE;
             }
         });
-
-        function setTimerPreset(seconds, element) {
-            if (isRunning || isShattered) return;
-            duration = seconds;
-            
-            document.querySelectorAll('.time-tab').forEach(tab => tab.classList.remove('active'));
-            element.classList.add('active');
-            
-            updateTimerDisplay();
-        }
-
-        function updateTimerDisplay() {
-            let minutes = Math.floor(duration / 60);
-            let seconds = duration % 60;
-            document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        }
-
-        function drawPixelArt(matrixString) {
-            canvas.style.boxShadow = matrixString;
-        }
 
         async function startHatching() {
             if (isRunning || isShattered) return;
             try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
 
             isRunning = true;
-            localStorage.setItem('pixelFocus_state', 'RUNNING');
+            localStorage.setItem('pet151_state', 'RUNNING');
             
             document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('timeSelector').style.opacity = '0';
             document.getElementById('screen-click-trigger').style.display = 'block';
             
-            drawPixelArt(PIXELS.EGG);
+            spriteImg.src = EGG_SPRITE;
             document.getElementById('incubator').style.borderColor = "#38bdf8";
             lastTime = Date.now();
         }
@@ -229,15 +171,87 @@
             if (timePassed > 4000) { shatterEgg(); return; }
 
             duration--;
-            updateTimerDisplay();
+            let minutes = Math.floor(duration / 60);
+            let seconds = duration % 60;
+            document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
             if (duration <= 0) {
                 clearInterval(countdown);
                 isRunning = false;
-                localStorage.setItem('pixelFocus_state', 'SUCCESS');
+                localStorage.setItem('pet151_state', 'SUCCESS');
                 
-                const monsterKeys = ['M1', 'M2', 'M3', 'M4'];
-                const randomKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
+                const randomMonster = MONSTER_IMAGES[Math.floor(Math.random() * MONSTER_IMAGES.length)];
                 
-                savePet(randomKey);
-drawPixelArt(PIXELS[randomKey]);document.getElementById('incubator').style.borderColor = "#4ade80";document.getElementById('timer').innerText = "✓";if(document.body.classList.contains('eco-mode')) toggleEcoMode();document.getElementById('screen-click-trigger').style.display = 'none';if (wakeLock) wakeLock.release();}}, 1000);document.addEventListener('visibilitychange', () => {if (document.visibilityState === 'hidden' && isRunning && !isShattered) shatterEgg();});function toggleEcoMode() {if (!isRunning || isShattered) return;const body = document.body;if (!body.classList.contains('eco-mode')) {body.classList.add('eco-mode');} else {body.classList.remove('eco-mode');lastTime = Date.now();}}function shatterEgg() {isShattered = true;isRunning = false;localStorage.setItem('petFocus_state', 'SHATTERED');drawPixelArt(PIXELS.FAIL);document.getElementById('incubator').style.borderColor = "#f87171";document.getElementById('timer').innerText = "✕";document.getElementById('startBtn').style.display = 'none';document.getElementById('timeSelector').style.opacity = '0';document.getElementById('resetBtn').style.display = 'inline-flex';document.getElementById('screen-click-trigger').style.display = 'none';if(document.body.classList.contains('eco-mode')) document.body.classList.remove('eco-mode');if (wakeLock) wakeLock.release();}function forceReset() {localStorage.setItem('pixelFocus_state', 'IDLE');location.reload();}function savePet(monsterKey) {let myPets = JSON.parse(localStorage.getItem('my_css_monsters')) || [];myPets.push(monsterKey);localStorage.setItem('my_css_monsters', JSON.stringify(myPets));updateCollectionUI();}function updateCollectionUI() {let myPets = JSON.parse(localStorage.getItem('my_css_monsters')) || [];const listDiv = document.getElementById('petList');listDiv.innerHTML = "";myPets.forEach(key => {const box = document.createElement('div');box.className = 'pet-box';box.innerHTML = <div class="pixel-art" style="box-shadow: ${PIXELS[key]}"></div>;listDiv.appendChild(box);});}
+                savePet(randomMonster);
+                
+                spriteImg.src = randomMonster;
+                document.getElementById('incubator').style.borderColor = "#4ade80";
+                document.getElementById('timer').innerText = "✓";
+                document.getElementById('timer').style.color = "#4ade80";
+                
+                if(document.body.classList.contains('eco-mode')) toggleEcoMode();
+                document.getElementById('screen-click-trigger').style.display = 'none';
+                if (wakeLock) wakeLock.release();
+            }
+        }, 1000);
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && isRunning && !isShattered) shatterEgg();
+        });
+
+        function toggleEcoMode() {
+            if (!isRunning || isShattered) return;
+            const body = document.body;
+            if (!body.classList.contains('eco-mode')) {
+                body.classList.add('eco-mode');
+            } else {
+                body.classList.remove('eco-mode');
+                lastTime = Date.now(); 
+            }
+        }
+
+        function shatterEgg() {
+            isShattered = true;
+            isRunning = false;
+            localStorage.setItem('pet151_state', 'SHATTERED');
+            
+            spriteImg.src = FAIL_SPRITE;
+            document.getElementById('incubator').style.borderColor = "#f87171";
+            document.getElementById('timer').innerText = "✕";
+            document.getElementById('timer').style.color = "#f87171";
+            
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'inline-flex';
+            document.getElementById('screen-click-trigger').style.display = 'none';
+            
+            if(document.body.classList.contains('eco-mode')) document.body.classList.remove('eco-mode');
+            if (wakeLock) wakeLock.release();
+        }
+
+        function forceReset() {
+            localStorage.setItem('pet151_state', 'IDLE');
+            location.reload();
+        }
+
+        function savePet(url) {
+            let myPets = JSON.parse(localStorage.getItem('my_retro_pokemon')) || [];
+            myPets.push(url);
+            localStorage.setItem('my_retro_pokemon', JSON.stringify(myPets));
+            updateCollectionUI();
+        }
+
+        function updateCollectionUI() {
+            let myPets = JSON.parse(localStorage.getItem('my_retro_pokemon')) || [];
+            const listDiv = document.getElementById('petList');
+            listDiv.innerHTML = "";
+            
+            myPets.forEach(url => {
+                const img = document.createElement('img');
+                img.className = 'pet-icon';
+                img.src = url;
+                listDiv.appendChild(img);
+            });
+        }
+    </script>
+</body>
+</html>
