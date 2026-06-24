@@ -128,7 +128,7 @@
     </div>
 
     <script>
-        // Pokedex-Reihenfolge der 4 Test-Pokémon
+        // Pokedex-Reihenfolge der 4 Test-Pokémon (Jetzt korrekt gefüllt)
         const DEX_IDS =;
 
         let duration = 10; // Test-Timer
@@ -271,4 +271,5 @@
             document.getElementById('incubator').style.borderColor = "#4ade80";
             document.getElementById('timer').innerText = "✓";
             
-if (document.body.classList.contains('eco-mode')) {document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}function shatterEgg() {clearInterval(countdownInterval);gameState = 'FAILED';localStorage.setItem('soul_state', 'FAILED');// Zieht ein zufälliges Monster, um dessen Rückseite als Strafe zu zeigencurrentRewardId = DEX_IDS[Math.floor(Math.random() * DEX_IDS.length)];// Visuelles Feedback (Fehlschlag, Zeit bleibt stehen)document.getElementById('overlaySprite').src = ${currentRewardId}_back.png;document.getElementById('incubator').style.borderColor = "#f87171";if (document.body.classList.contains('eco-mode')) {document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}// Trigger, falls die App im Hintergrund abgewürgt wurdefunction triggerCheatFail() {document.getElementById('overlay-screen').style.display = 'flex';shatterEgg();document.getElementById('timer').innerText = "✕";}function closeOverlayAndReset() {gameState = 'IDLE';localStorage.setItem('soul_state', 'IDLE');document.getElementById('overlay-screen').style.display = 'none';renderPokedexGrid(); // Grid neu aufbauen (inklusive eventuellem Highlight)}// Erkennt App-Wechsel sofortdocument.addEventListener('visibilitychange', () => {if (document.visibilityState === 'hidden' && (gameState === 'RUNNING' || gameState === 'ECO')) {shatterEgg();}});
+            if (document.body.classList.contains('eco-mode')) {
+document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}function shatterEgg() {clearInterval(countdownInterval);gameState = 'FAILED';localStorage.setItem('soul_state', 'FAILED');// Zieht ein zufälliges Monster, um dessen Rückseite als Strafe zu zeigencurrentRewardId = DEX_IDS[Math.floor(Math.random() * DEX_IDS.length)];// Visuelles Feedback (Fehlschlag, Zeit bleibt stehen)document.getElementById('overlaySprite').src = ${currentRewardId}_back.png;document.getElementById('incubator').style.borderColor = "#f87171";if (document.body.classList.contains('eco-mode')) {document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}// Trigger, falls die App im Hintergrund abgewürgt wurdefunction triggerCheatFail() {document.getElementById('overlay-screen').style.display = 'flex';shatterEgg();document.getElementById('timer').innerText = "✕";}function closeOverlayAndReset() {gameState = 'IDLE';localStorage.setItem('soul_state', 'IDLE');document.getElementById('overlay-screen').style.display = 'none';renderPokedexGrid(); // Grid neu aufbauen}// Erkennt App-Wechsel sofortdocument.addEventListener('visibilitychange', () => {if (document.visibilityState === 'hidden' && (gameState === 'RUNNING' || gameState === 'ECO')) {shatterEgg();}});
