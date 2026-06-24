@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PocketPet 151 (Test)</title>
+    <title>SoulLock 151</title>
     <style>
         @import url('https://googleapis.com');
 
         body { 
             font-family: 'Press Start 2P', monospace; 
             text-align: center; 
-            background: #070a12; 
+            background: #05070f; 
             color: #38bdf8; 
-            padding-top: 40px; 
+            padding-top: 50px; 
             margin: 0;
             overflow: hidden;
             transition: background 0.4s;
@@ -20,6 +20,7 @@
             -webkit-user-select: none; 
         }
         
+        /* FULL SCREEN OLED ECO MODE */
         body.eco-mode { background: #000000 !important; }
         body.eco-mode button, body.eco-mode #timer, body.eco-mode #collection {
             opacity: 0 !important;
@@ -32,13 +33,13 @@
             box-shadow: none !important;
         }
         body.eco-mode #mainSprite {
-            filter: brightness(0) invert(1) drop-shadow(0 0 5px #38bdf8);
+            filter: brightness(0) invert(1) drop-shadow(0 0 4px #38bdf8);
         }
 
         #incubator {
-            width: 160px; height: 160px;
+            width: 150px; height: 150px;
             margin: 30px auto;
-            background: #111827;
+            background: #0f172a;
             border: 4px solid #38bdf8;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -46,30 +47,31 @@
         }
         
         #mainSprite {
-            width: 120px; height: 120px;
+            width: 110px; height: 110px;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-            transition: transform 0.3s;
         }
         
         #timer { 
-            font-size: 28px; 
-            margin: 25px 0; 
+            font-size: 32px; 
+            margin: 30px 0; 
             color: #38bdf8; 
             transition: opacity 0.3s; 
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
         }
         
+        /* Pure 8-Bit Pixel Buttons */
         button {
-            background: #111827; 
+            background: #0f172a; 
             color: #38bdf8; 
             border: 4px solid #38bdf8;
             font-family: 'Press Start 2P', monospace;
-            font-size: 20px;
-            padding: 15px 25px;
+            font-size: 28px;
+            width: 75px; height: 75px;
+            border-radius: 0;
             cursor: pointer; margin: 10px;
-            transition: all 0.2s;
+            transition: all 0.1s;
             box-shadow: 4px 4px 0px #1e293b;
+            display: inline-flex; align-items: center; justify-content: center;
         }
         button:active {
             transform: translate(4px, 4px);
@@ -77,21 +79,21 @@
         }
         
         #collection {
-            margin-top: 40px;
+            margin-top: 50px;
             padding: 15px;
-            background: #0b0f19;
-            border-top: 4px dashed rgba(56, 189, 248, 0.3);
-            min-height: 140px;
+            background: #090c14;
+            border-top: 4px dashed rgba(56, 189, 248, 0.2);
+            min-height: 120px;
             transition: opacity 0.3s;
             overflow-x: auto;
             white-space: nowrap;
         }
         .pet-icon {
-            width: 56px; height: 56px;
+            width: 50px; height: 50px;
             display: inline-block;
             margin: 5px;
-            background: #111827;
-            border: 2px solid rgba(56, 189, 248, 0.4);
+            background: #0f172a;
+            border: 2px solid rgba(56, 189, 248, 0.3);
             image-rendering: pixelated;
         }
         
@@ -112,19 +114,22 @@
     
     <div id="timer">00:10</div>
     
-    <button id="startBtn" onclick="startHatching()">START</button>
-    <button id="resetBtn" onclick="forceReset()" style="display:none; border-color:#f87171; color:#f87171; box-shadow: 4px 4px 0px #451a1a;">TRY AGAIN</button>
+    <button id="startBtn" onclick="startHatching()">►</button>
+    <button id="resetBtn" onclick="forceReset()" style="display:none; border-color:#f87171; color:#f87171; box-shadow: 4px 4px 0px #451a1a;">↻</button>
 
     <div id="collection">
         <div id="petList"></div>
     </div>
 
     <script>
-        const EGG_SPRITE = "https://githubusercontent.com";
-        const FAIL_SPRITE = "https://githubusercontent.com"; 
+        // Sicheres, ausfallsicheres CDN für die originalen Game Boy Sprites
+        const BASE_URL = "https://jsdelivr.net";
+        
+        // Originale Sprites für Ei und Fossil (Zerstört)
+        const EGG_SPRITE = "https://jsdelivr.net";
+        const FAIL_SPRITE = BASE_URL + "141.png"; 
 
-        // !!! TEST-EINSTELLUNG: AUF 10 SEKUNDEN GESETZT !!!
-        let duration = 10; 
+        let duration = 10; // 10 Sekunden Test-Timer
         let lastTime = Date.now();
         let isRunning = false;
         let isShattered = false;
@@ -177,14 +182,15 @@
                 isRunning = false;
                 localStorage.setItem('pet151_state', 'SUCCESS');
                 
+                // Zieht ein zufälliges Pokémon aus den ersten 151
                 const randomId = Math.floor(Math.random() * 151) + 1;
-                const pokemonSpriteUrl = `https://githubusercontent.com{randomId}.png`;
+                const pokemonSpriteUrl = BASE_URL + randomId + ".png";
                 
                 savePet(pokemonSpriteUrl);
                 
                 spriteImg.src = pokemonSpriteUrl;
                 document.getElementById('incubator').style.borderColor = "#4ade80";
-                document.getElementById('timer').innerText = "GOTCHA!";
+                document.getElementById('timer').innerText = "✓";
                 document.getElementById('timer').style.color = "#4ade80";
                 
                 if(document.body.classList.contains('eco-mode')) toggleEcoMode();
@@ -215,11 +221,11 @@
             
             spriteImg.src = FAIL_SPRITE;
             document.getElementById('incubator').style.borderColor = "#f87171";
-            document.getElementById('timer').innerText = "ERROR";
+            document.getElementById('timer').innerText = "✕";
             document.getElementById('timer').style.color = "#f87171";
             
             document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('resetBtn').style.display = 'inline-block';
+            document.getElementById('resetBtn').style.display = 'inline-flex';
             document.getElementById('screen-click-trigger').style.display = 'none';
             
             if(document.body.classList.contains('eco-mode')) document.body.classList.remove('eco-mode');
