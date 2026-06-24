@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SoulLock</title>
+    <title>SoulLock Pokedex</title>
     <style>
         @import url('https://googleapis.com');
 
@@ -12,246 +12,263 @@
             text-align: center; 
             background: #05070f; 
             color: #38bdf8; 
-            padding-top: 50px; 
             margin: 0;
+            padding: 0;
             overflow: hidden;
-            transition: background 0.4s;
             user-select: none;
             -webkit-user-select: none; 
         }
-        
-        /* FULL SCREEN OLED ECO MODE */
-        body.eco-mode { background: #000000 !important; }
-        body.eco-mode button, body.eco-mode #timer, body.eco-mode #collection {
-            opacity: 0 !important;
-            pointer-events: none;
+
+        /* 1. STARTBILDSCHIRM: Das 2x2 Retro-Grid */
+        #pokedex-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            box-sizing: border-box;
+            padding: 20px;
         }
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 260px;
+        }
+        .grid-cell {
+            width: 100px;
+            height: 100px;
+            background: #0f172a;
+            border: 4px solid #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .grid-cell img {
+            width: 85px;
+            height: 85px;
+            image-rendering: pixelated;
+        }
+        /* Highlight für das zuletzt gefangene Pokémon */
+        .grid-cell.latest-catch {
+            border-color: #4ade80 !important;
+            animation: highlight-pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 5px #4ade80; }
+            50% { box-shadow: 0 0 20px #4ade80; }
+            100% { box-shadow: 0 0 5px #4ade80; }
+        }
+
+        /* 2. BRUT-PHASE: Das Vollbild-Overlay */
+        #overlay-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #05070f;
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #incubator {
+            width: 160px; height: 160px;
+            background: #0f172a;
+            border: 4px solid #38bdf8;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #overlaySprite {
+            width: 120px; height: 120px;
+            image-rendering: pixelated;
+        }
+        #timer { 
+            font-size: 32px; 
+            margin-top: 30px; 
+            color: #38bdf8; 
+        }
+
+        /* Dimm-Zustand für OLED-Modus */
+        body.eco-mode #overlay-screen { background: #000000 !important; }
+        body.eco-mode #timer { opacity: 0 !important; }
         body.eco-mode #incubator { 
             transform: scale(0.45); 
             background: transparent !important;
             border-color: rgba(56, 189, 248, 0.2) !important;
             box-shadow: none !important;
+            animation: pulse-eco 2.5s infinite ease-in-out;
         }
-        body.eco-mode #mainSprite {
+        body.eco-mode #overlaySprite {
             filter: brightness(0) invert(1) drop-shadow(0 0 4px #38bdf8);
         }
-
-        #incubator {
-            width: 150px; height: 150px;
-            margin: 30px auto;
-            background: #0f172a;
-            border: 4px solid #38bdf8;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; align-items: center; justify-content: center;
-        }
-        
-        #mainSprite {
-            width: 110px; height: 110px;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-        }
-        
-        #timer { 
-            font-size: 32px; 
-            margin: 30px 0; 
-            color: #38bdf8; 
-            transition: opacity 0.3s; 
-        }
-        
-        button {
-            background: #0f172a; 
-            color: #38bdf8; 
-            border: 4px solid #38bdf8;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 28px;
-            width: 75px; height: 75px;
-            cursor: pointer; margin: 10px;
-            transition: all 0.1s;
-            box-shadow: 4px 4px 0px #1e293b;
-            display: inline-flex; align-items: center; justify-content: center;
-        }
-        button:active {
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px transparent;
-        }
-        
-        #collection {
-            margin-top: 50px;
-            padding: 15px;
-            background: #090c14;
-            border-top: 4px dashed rgba(56, 189, 248, 0.2);
-            min-height: 120px;
-            transition: opacity 0.3s;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        .pet-icon {
-            width: 50px; height: 50px;
-            display: inline-block;
-            margin: 5px;
-            background: #0f172a;
-            border: 2px solid rgba(56, 189, 248, 0.3);
-            image-rendering: pixelated;
-        }
-        
-        #screen-click-trigger {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 5; display: none;
+        @keyframes pulse-eco {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
     </style>
 </head>
 <body>
 
-    <div id="screen-click-trigger" onclick="toggleEcoMode()"></div>
-    
-    <div id="incubator">
-        <img id="mainSprite" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="status">
+    <!-- Start-Screen mit Pokedex-Raster -->
+    <div id="pokedex-screen" onclick="openOverlayForHatching()">
+        <div class="grid-2x2" id="pokedexGrid">
+            <!-- Zellen (IDs 1, 4, 7, 25) werden per JS generiert -->
+        </div>
     </div>
-    
-    <div id="timer">00:10</div>
-    
-    <button id="startBtn" onclick="startHatching()">►</button>
-    <button id="resetBtn" onclick="forceReset()" style="display:none; border-color:#f87171; color:#f87171; box-shadow: 4px 4px 0px #451a1a;">↻</button>
 
-    <div id="collection">
-        <div id="petList"></div>
+    <!-- Gameplay-Overlay -->
+    <div id="overlay-screen" onclick="handleOverlayClick()">
+        <div id="incubator">
+            <img id="overlaySprite" src="egg.png" alt="status">
+        </div>
+        <div id="timer">00:10</div>
     </div>
 
     <script>
-        // Nutzt dein hochgeladenes Fragezeichen als Start-Ei
-        const EGG_SPRITE = "0.png";
-        const FAIL_SPRITE = "fail.png"; 
-        
-        // Der Pool aus deinen drei verfügbaren Start-Pokémon
-        const MONSTER_IMAGES = ["1.png", "4.png", "7.png"];
+        // Pokedex-Reihenfolge der 4 Test-Pokémon
+        const DEX_IDS =;
 
-        let duration = 10; 
+        let duration = 10; // Test-Timer
         let lastTime = Date.now();
-        let isRunning = false;
-        let isShattered = false;
+        
+        // Spielzustände: 'IDLE', 'RUNNING', 'ECO', 'SUCCESS', 'FAILED'
+        let gameState = 'IDLE'; 
+        let currentRewardId = null;
         let wakeLock = null;
-
-        const spriteImg = document.getElementById('mainSprite');
+        let countdownInterval = null;
 
         window.addEventListener('load', () => {
-            updateCollectionUI();
-            const savedState = localStorage.getItem('pet151_state');
+            renderPokedexGrid();
             
-            if (savedState === 'RUNNING' || savedState === 'SHATTERED') {
-                shatterEgg();
-            } else {
-                spriteImg.src = EGG_SPRITE;
+            // Schutz-Check bei versehentlichem Schließen
+            const savedState = localStorage.getItem('soul_state');
+            if (savedState === 'RUNNING' || savedState === 'ECO') {
+                triggerCheatFail();
             }
         });
 
-        async function startHatching() {
-            if (isRunning || isShattered) return;
-            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+        // Generiert das 2x2 Raster basierend auf dem Speicher
+        function renderPokedexGrid() {
+            const caughtList = JSON.parse(localStorage.getItem('caught_ids')) || [];
+            const latestCatch = localStorage.getItem('latest_catch_id');
+            const gridContainer = document.getElementById('pokedexGrid');
+            gridContainer.innerHTML = "";
 
-            isRunning = true;
-            localStorage.setItem('pet151_state', 'RUNNING');
-            
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('screen-click-trigger').style.display = 'block';
-            
-            spriteImg.src = EGG_SPRITE;
-            document.getElementById('incubator').style.borderColor = "#38bdf8";
-            lastTime = Date.now();
+            DEX_IDS.forEach(id => {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                
+                // Highlight für das allerletzte gebrütete Pokémon
+                if (latestCatch && parseInt(latestCatch) === id) {
+                    cell.classList.add('latest-catch');
+                }
+
+                const img = document.createElement('img');
+                if (caughtList.includes(id)) {
+                    img.src = `${id}.png`; // Gefangen -> Vorderseite
+                } else {
+                    img.src = "0.png"; // Nicht gefangen -> Fragezeichen
+                }
+                
+                cell.appendChild(img);
+                gridContainer.appendChild(cell);
+            });
         }
 
-        const countdown = setInterval(() => {
-            if (!isRunning || isShattered) return;
+        // Klick auf das Haupt-Raster startet die Brut-Vorbereitung
+        async function openOverlayForHatching() {
+            if (gameState !== 'IDLE') return;
 
-            const currentTime = Date.now();
-            const timePassed = currentTime - lastTime;
-            lastTime = currentTime;
+            gameState = 'RUNNING';
+            localStorage.setItem('soul_state', 'RUNNING');
+            duration = 10;
+            
+            // Bildschirm-Wachhalter anfordern
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
 
-            if (timePassed > 4000) { shatterEgg(); return; }
+            document.getElementById('overlay-screen').style.display = 'flex';
+            document.getElementById('overlaySprite').src = "egg.png";
+            document.getElementById('incubator').style.borderColor = "#38bdf8";
+            updateTimerDisplay();
 
-            duration--;
+            lastTime = Date.now();
+            startTimer();
+        }
+
+        function startTimer() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                if (gameState !== 'RUNNING' && gameState !== 'ECO') return;
+
+                const currentTime = Date.now();
+                const timePassed = currentTime - lastTime;
+                lastTime = currentTime;
+
+                // Erkennung für System-Standby/Sperrung
+                if (timePassed > 4000) {
+                    shatterEgg();
+                    return;
+                }
+
+                duration--;
+                updateTimerDisplay();
+
+                if (duration <= 0) {
+                    triggerSuccess();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
             let minutes = Math.floor(duration / 60);
             let seconds = duration % 60;
             document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
 
-            if (duration <= 0) {
-                clearInterval(countdown);
-                isRunning = false;
-                localStorage.setItem('pet151_state', 'SUCCESS');
-                
-                const randomMonster = MONSTER_IMAGES[Math.floor(Math.random() * MONSTER_IMAGES.length)];
-                
-                savePet(randomMonster);
-                
-                spriteImg.src = randomMonster;
-                document.getElementById('incubator').style.borderColor = "#4ade80";
-                document.getElementById('timer').innerText = "✓";
-                document.getElementById('timer').style.color = "#4ade80";
-                
-                if(document.body.classList.contains('eco-mode')) toggleEcoMode();
-                document.getElementById('screen-click-trigger').style.display = 'none';
-                if (wakeLock) wakeLock.release();
-            }
-        }, 1000);
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && isRunning && !isShattered) shatterEgg();
-        });
-
-        function toggleEcoMode() {
-            if (!isRunning || isShattered) return;
-            const body = document.body;
-            if (!body.classList.contains('eco-mode')) {
-                body.classList.add('eco-mode');
-            } else {
-                body.classList.remove('eco-mode');
-                lastTime = Date.now(); 
+        // Klick-Logik im laufenden oder beendeten Zustand innerhalb des Overlays
+        function handleOverlayClick() {
+            if (gameState === 'RUNNING') {
+                // Wechsel in den OLED-Dimm-Modus
+                gameState = 'ECO';
+                localStorage.setItem('soul_state', 'ECO');
+                document.body.classList.add('eco-mode');
+            } 
+            else if (gameState === 'ECO') {
+                // Zurück in den normalen Brutmodus
+                gameState = 'RUNNING';
+                localStorage.setItem('soul_state', 'RUNNING');
+                document.body.classList.remove('eco-mode');
+                lastTime = Date.now(); // Zeit-Resync
+            } 
+            else if (gameState === 'SUCCESS' || gameState === 'FAILED') {
+                // Beendet das Overlay und kehrt zum aktualisierten Grid zurück
+                closeOverlayAndReset();
             }
         }
 
-        function shatterEgg() {
-            isShattered = true;
-            isRunning = false;
-            localStorage.setItem('pet151_state', 'SHATTERED');
-            
-            spriteImg.src = FAIL_SPRITE;
-            document.getElementById('incubator').style.borderColor = "#f87171";
-            document.getElementById('timer').innerText = "✕";
-            document.getElementById('timer').style.color = "#f87171";
-            
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('resetBtn').style.display = 'inline-flex';
-            document.getElementById('screen-click-trigger').style.display = 'none';
-            
-            if(document.body.classList.contains('eco-mode')) document.body.classList.remove('eco-mode');
-            if (wakeLock) wakeLock.release();
-        }
+        function triggerSuccess() {
+            clearInterval(countdownInterval);
+            gameState = 'SUCCESS';
+            localStorage.setItem('soul_state', 'SUCCESS');
 
-        function forceReset() {
-            localStorage.setItem('pet151_state', 'IDLE');
-            location.reload();
-        }
-
-        function savePet(url) {
-            let myPets = JSON.parse(localStorage.getItem('my_retro_pokemon')) || [];
-            myPets.push(url);
-            localStorage.setItem('my_retro_pokemon', JSON.stringify(myPets));
-            updateCollectionUI();
-        }
-
-        function updateCollectionUI() {
-            let myPets = JSON.parse(localStorage.getItem('my_retro_pokemon')) || [];
-            const listDiv = document.getElementById('petList');
-            listDiv.innerHTML = "";
+            // Zufälliges Pokémon aus den 4 Testoptionen ziehen
+            currentRewardId = DEX_IDS[Math.floor(Math.random() * DEX_IDS.length)];
             
-            myPets.forEach(url => {
-                const img = document.createElement('img');
-                img.className = 'pet-icon';
-                img.src = url;
-                listDiv.appendChild(img);
-            });
-        }
-    </script>
-</body>
-</html>
+            // In der Sammlung im localStorage speichern
+            let caughtList = JSON.parse(localStorage.getItem('caught_ids')) || [];
+            if (!caughtList.includes(currentRewardId)) {
+                caughtList.push(currentRewardId);
+                localStorage.setItem('caught_ids', JSON.stringify(caughtList));
+            }
+            // Als letzten Fang für das Highlight markieren
+            localStorage.setItem('latest_catch_id', currentRewardId);
+
+            // Visuelles Feedback (Erfolg)
+            document.getElementById('overlaySprite').src = `${currentRewardId}.png`;
+            document.getElementById('incubator').style.borderColor = "#4ade80";
+            document.getElementById('timer').innerText = "✓";
+            
+if (document.body.classList.contains('eco-mode')) {document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}function shatterEgg() {clearInterval(countdownInterval);gameState = 'FAILED';localStorage.setItem('soul_state', 'FAILED');// Zieht ein zufälliges Monster, um dessen Rückseite als Strafe zu zeigencurrentRewardId = DEX_IDS[Math.floor(Math.random() * DEX_IDS.length)];// Visuelles Feedback (Fehlschlag, Zeit bleibt stehen)document.getElementById('overlaySprite').src = ${currentRewardId}_back.png;document.getElementById('incubator').style.borderColor = "#f87171";if (document.body.classList.contains('eco-mode')) {document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}// Trigger, falls die App im Hintergrund abgewürgt wurdefunction triggerCheatFail() {document.getElementById('overlay-screen').style.display = 'flex';shatterEgg();document.getElementById('timer').innerText = "✕";}function closeOverlayAndReset() {gameState = 'IDLE';localStorage.setItem('soul_state', 'IDLE');document.getElementById('overlay-screen').style.display = 'none';renderPokedexGrid(); // Grid neu aufbauen (inklusive eventuellem Highlight)}// Erkennt App-Wechsel sofortdocument.addEventListener('visibilitychange', () => {if (document.visibilityState === 'hidden' && (gameState === 'RUNNING' || gameState === 'ECO')) {shatterEgg();}});
