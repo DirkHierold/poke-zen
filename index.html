@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Ei-Brüter</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding-top: 50px; }
+        #egg { font-size: 80px; margin: 20px; transition: all 0.5s; }
+        .status { font-weight: bold; font-size: 20px; }
+        .alive { color: green; }
+        .dead { color: red; }
+    </style>
+</head>
+<body>
+
+    <h1>Pokémon Fokus-Brüter</h1>
+    <p>Lass das Handy liegen. Wenn du die App wechselst, schlägt das Ausbrüten fehl!</p>
+    
+    <div id="egg">🥚</div>
+    <div id="statusText" class="status alive">Das Ei wird warm gehalten...</div>
+    <div id="timer" style="font-size: 24px; margin-top: 20px;">Verbleibende Zeit: 10:00</div>
+
+    <script>
+        let duration = 600; // 10 Minuten in Sekunden
+        let lastTime = Date.now();
+        let eggBroken = false;
+        let wakeLock = null;
+
+        // 1. Bildschirm wach halten
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log("Wake Lock konnte nicht aktiviert werden.");
+            }
+        }
+        requestWakeLock();
+
+        // Haupt-Timer (Prüft jede Sekunde)
+        const countdown = setInterval(() => {
+            if (eggBroken) return;
+
+            const currentTime = Date.now();
+            // Check 1: Wurde das JavaScript im Hintergrund pausiert? (Zeitsprung > 2 Sekunden)
+            if (currentTime - lastTime > 2000) {
+                failHatching("Du hast das Spiel im Hintergrund pausiert!");
+                return;
+            }
+            lastTime = currentTime;
+
+            // Zeit herunterzählen
+            duration--;
+            let minutes = Math.floor(duration / 60);
+            let seconds = duration % 60;
+            document.getElementById('timer').innerText = `Verbleibende Zeit: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            if (duration <= 0) {
+                clearInterval(countdown);
+                document.getElementById('egg').innerText = '🐣🎉';
+                document.getElementById('statusText').innerText = "Glückwunsch! Dein Pokémon ist geschlüpft!";
+            }
+        }, 1000);
+
+        // Check 2: Sichtbarkeit des Tabs hat sich geändert (Tab gewechselt / App minimiert)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && !eggBroken) {
+                failHatching("Du hast die Webseite verlassen!");
+            }
+        });
+
+        // Funktion für das Fehlschlagen
+        function failHatching(reason) {
+            eggBroken = true;
+            clearInterval(countdown);
+            document.getElementById('egg').innerText = '🍳❌';
+            document.getElementById('statusText').innerText = `Fehlgeschlagen: ${reason}`;
+            document.getElementById('statusText').className = "status dead";
+            if (wakeLock) wakeLock.release();
+        }
+    </script>
+</body>
+</html>
