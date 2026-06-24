@@ -1,162 +1,163 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SoulLock</title>
+    <title>PocketPet 151 (Test)</title>
     <style>
+        @import url('https://googleapis.com');
+
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-family: 'Press Start 2P', monospace; 
             text-align: center; 
-            background: #0a0a0f; 
-            color: #e0e0e6;
-            padding-top: 60px; 
+            background: #070a12; 
+            color: #38bdf8; 
+            padding-top: 40px; 
             margin: 0;
             overflow: hidden;
-            transition: background 0.5s, opacity 0.5s;
+            transition: background 0.4s;
+            user-select: none;
+            -webkit-user-select: none; 
         }
         
-        /* Eco-Modus Klasse für maximales Stromsparen */
-        body.eco-mode {
-            background: #000000 !important;
-        }
-        body.eco-mode h1, body.eco-mode p, body.eco-mode button, body.eco-mode #timer {
-            opacity: 0.02; /* Fast unsichtbar = Pixel verbrauchen kaum Strom */
+        body.eco-mode { background: #000000 !important; }
+        body.eco-mode button, body.eco-mode #timer, body.eco-mode #collection {
+            opacity: 0 !important;
             pointer-events: none;
         }
-        body.eco-mode #aura-container {
-            transform: scale(0.2); /* Aura winzig machen */
+        body.eco-mode #incubator { 
+            transform: scale(0.45); 
+            background: transparent !important;
+            border-color: rgba(56, 189, 248, 0.2) !important;
+            box-shadow: none !important;
+        }
+        body.eco-mode #mainSprite {
+            filter: brightness(0) invert(1) drop-shadow(0 0 5px #38bdf8);
         }
 
-        h1 { font-weight: 300; letter-spacing: 2px; color: #a182ff; transition: opacity 0.5s; }
-        p { color: #7a7a8c; font-size: 14px; padding: 0 20px; transition: opacity 0.5s; }
-        
-        #aura-container {
-            width: 200px;
-            height: 200px;
-            margin: 40px auto;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.5s;
-        }
-        #aura { font-size: 70px; z-index: 2; }
-        
-        .glow-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 2px solid #5a3eff;
-            box-shadow: 0 0 20px #5a3eff, inset 0 0 20px #5a3eff;
-            animation: pulse 3s infinite ease-in-out;
-            opacity: 0;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; box-shadow: 0 0 30px #913eff, inset 0 0 15px #913eff; border-color: #913eff; }
-            100% { transform: scale(0.95); opacity: 0.5; }
+        #incubator {
+            width: 160px; height: 160px;
+            margin: 30px auto;
+            background: #111827;
+            border: 4px solid #38bdf8;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center;
         }
         
-        .status { font-weight: bold; font-size: 18px; margin-top: 20px; letter-spacing: 1px; }
-        .alive { color: #5effa3; }
-        .dead { color: #ff5e5e; }
+        #mainSprite {
+            width: 120px; height: 120px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            transition: transform 0.3s;
+        }
         
-        #timer { font-size: 32px; font-weight: 200; margin-top: 10px; color: #ffffff; transition: opacity 0.5s; }
+        #timer { 
+            font-size: 28px; 
+            margin: 25px 0; 
+            color: #38bdf8; 
+            transition: opacity 0.3s; 
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
         
         button {
-            background: #251b4e;
-            color: #a182ff;
-            border: 1px solid #5a3eff;
-            padding: 12px 30px;
-            font-size: 16px;
-            border-radius: 25px;
-            cursor: pointer;
-            margin: 10px 5px;
-            transition: all 0.3s;
+            background: #111827; 
+            color: #38bdf8; 
+            border: 4px solid #38bdf8;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 20px;
+            padding: 15px 25px;
+            cursor: pointer; margin: 10px;
+            transition: all 0.2s;
+            box-shadow: 4px 4px 0px #1e293b;
         }
-        button:hover { background: #34257c; color: #ffffff; }
-        
-        #ecoBtn {
-            background: #111118;
-            border-color: #333;
-            color: #666;
-            display: none;
+        button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px transparent;
         }
         
-        /* Ein unsichtbarer Klick-Overlay für den Eco-Modus-Ausstieg */
-        #eco-overlay {
+        #collection {
+            margin-top: 40px;
+            padding: 15px;
+            background: #0b0f19;
+            border-top: 4px dashed rgba(56, 189, 248, 0.3);
+            min-height: 140px;
+            transition: opacity 0.3s;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .pet-icon {
+            width: 56px; height: 56px;
+            display: inline-block;
+            margin: 5px;
+            background: #111827;
+            border: 2px solid rgba(56, 189, 248, 0.4);
+            image-rendering: pixelated;
+        }
+        
+        #screen-click-trigger {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9999;
-            display: none;
+            z-index: 5; display: none;
         }
     </style>
 </head>
 <body>
 
-    <h1 id="title">SOUL LOCK</h1>
-    <p id="instruction">Starte das Ritual. Wenn du die App schließt oder wechselst, bricht deine Seele.</p>
+    <div id="screen-click-trigger" onclick="toggleEcoMode()"></div>
     
-    <div id="aura-container">
-        <div id="glow" class="glow-ring"></div>
-        <div id="aura">🔒</div>
+    <div id="incubator">
+        <img id="mainSprite" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="status">
     </div>
     
-    <div id="statusText" class="status">Prüfe Seelenzustand...</div>
-    <div id="timer">10:00</div>
+    <div id="timer">00:10</div>
     
-    <button id="startBtn" onclick="startRitual()">Ritual Starten</button>
-    <button id="ecoBtn" onclick="toggleEcoMode()">⚡ Eco-Modus (Bildschirm dimmen)</button>
-    <button id="resetBtn" onclick="forceReset()" style="display:none; background:#4e1b1b; border-color:#ff5e5e; color:#ff5e5e;">Neues Ritual starten</button>
+    <button id="startBtn" onclick="startHatching()">START</button>
+    <button id="resetBtn" onclick="forceReset()" style="display:none; border-color:#f87171; color:#f87171; box-shadow: 4px 4px 0px #451a1a;">TRY AGAIN</button>
 
-    <div id="eco-overlay" onclick="toggleEcoMode()"></div>
+    <div id="collection">
+        <div id="petList"></div>
+    </div>
 
     <script>
-        let duration = 600; 
+        const EGG_SPRITE = "https://githubusercontent.com";
+        const FAIL_SPRITE = "https://githubusercontent.com"; 
+
+        // !!! TEST-EINSTELLUNG: AUF 10 SEKUNDEN GESETZT !!!
+        let duration = 10; 
         let lastTime = Date.now();
         let isRunning = false;
         let isShattered = false;
         let wakeLock = null;
 
-        // BEIM LADEN DER SEITE: Prüfen, ob der Nutzer geschummelt hat
+        const spriteImg = document.getElementById('mainSprite');
+
         window.addEventListener('load', () => {
-            const savedState = localStorage.getItem('soulLock_state');
+            updateCollectionUI();
+            const savedState = localStorage.getItem('pet151_state');
             
-            if (savedState === 'RUNNING') {
-                // Ertappt! Die App wurde im laufenden Betrieb geschlossen
-                shatterSoul("Du hast die App mutwillig geschlossen!");
-            } else if (savedState === 'SHATTERED') {
-                // Bleibt gesperrt, bis man aktiv den Reset-Knopf drückt
-                shatterSoul("Deine Seele ist noch immer gebrochen.");
+            if (savedState === 'RUNNING' || savedState === 'SHATTERED') {
+                shatterEgg();
             } else {
-                document.getElementById('statusText').innerText = "Bereit für das Ritual...";
+                spriteImg.src = EGG_SPRITE;
             }
         });
 
-        async function startRitual() {
+        async function startHatching() {
             if (isRunning || isShattered) return;
-            
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                }
-            } catch (err) { console.log("WakeLock blockiert."); }
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
 
             isRunning = true;
-            localStorage.setItem('soulLock_state', 'RUNNING'); // Zustand im iPhone sichern
+            localStorage.setItem('pet151_state', 'RUNNING');
             
             document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('ecoBtn').style.display = 'inline-block';
-            document.getElementById('glow').style.opacity = '1';
-            document.getElementById('aura').innerText = '✨';
-            document.getElementById('statusText').innerText = "Seele fixiert. Nicht ablenken lassen...";
-            document.getElementById('statusText').className = "status alive";
+            document.getElementById('screen-click-trigger').style.display = 'block';
+            
+            spriteImg.src = EGG_SPRITE;
+            document.getElementById('incubator').style.borderColor = "#38bdf8";
             lastTime = Date.now();
         }
 
-        // Haupt-Countdown
         const countdown = setInterval(() => {
             if (!isRunning || isShattered) return;
 
@@ -164,79 +165,90 @@
             const timePassed = currentTime - lastTime;
             lastTime = currentTime;
 
-            // Erkennung für den iOS-Sperrzustand (falls WakeLock fehlschlägt)
-            if (timePassed > 4000) {
-                shatterSoul("Das Handy ging in den Standby!"); 
-                return;
-            }
+            if (timePassed > 4000) { shatterEgg(); return; }
 
             duration--;
             let minutes = Math.floor(duration / 60);
             let seconds = duration % 60;
-            document.getElementById('timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
             if (duration <= 0) {
                 clearInterval(countdown);
                 isRunning = false;
-                localStorage.setItem('soulLock_state', 'SUCCESS');
-                document.getElementById('aura').innerText = '🔮';
-                document.getElementById('statusText').innerText = "Erfolgreich! Deine Seele ist gestärkt.";
-                document.getElementById('glow').style.borderColor = "#5effa3";
-                document.getElementById('glow').style.boxShadow = "0 0 30px #5effa3";
-                document.getElementById('ecoBtn').style.display = 'none';
+                localStorage.setItem('pet151_state', 'SUCCESS');
+                
+                const randomId = Math.floor(Math.random() * 151) + 1;
+                const pokemonSpriteUrl = `https://githubusercontent.com{randomId}.png`;
+                
+                savePet(pokemonSpriteUrl);
+                
+                spriteImg.src = pokemonSpriteUrl;
+                document.getElementById('incubator').style.borderColor = "#4ade80";
+                document.getElementById('timer').innerText = "GOTCHA!";
+                document.getElementById('timer').style.color = "#4ade80";
+                
                 if(document.body.classList.contains('eco-mode')) toggleEcoMode();
+                document.getElementById('screen-click-trigger').style.display = 'none';
                 if (wakeLock) wakeLock.release();
             }
         }, 1000);
 
-        // App-Wechsel Erkennung
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && isRunning && !isShattered) {
-                shatterSoul("Du hast die Webseite verlassen!");
-            }
+            if (document.visibilityState === 'hidden' && isRunning && !isShattered) shatterEgg();
         });
 
-        // ECO-MODUS (Tiefschwarzer Bildschirm spart Strom auf OLED)
         function toggleEcoMode() {
             if (!isRunning || isShattered) return;
-            
             const body = document.body;
-            const overlay = document.getElementById('eco-overlay');
-            
             if (!body.classList.contains('eco-mode')) {
                 body.classList.add('eco-mode');
-                overlay.style.display = 'block'; // Aktiviert Klickschutz über dem ganzen Bildschirm
             } else {
                 body.classList.remove('eco-mode');
-                overlay.style.display = 'none';
-                lastTime = Date.now(); // Zeit-Resync nach dem Aufwachen
+                lastTime = Date.now(); 
             }
         }
 
-        function shatterSoul(reason) {
+        function shatterEgg() {
             isShattered = true;
             isRunning = false;
-            localStorage.setItem('soulLock_state', 'SHATTERED'); // Permanent merken!
+            localStorage.setItem('pet151_state', 'SHATTERED');
             
-            document.getElementById('aura').innerText = '💥';
-            document.getElementById('statusText').innerText = `Gebrochen: ${reason}`;
-            document.getElementById('statusText').className = "status dead";
-            document.getElementById('glow').style.borderColor = "#ff5e5e";
-            document.getElementById('glow').style.boxShadow = "0 0 30px #ff5e5e";
+            spriteImg.src = FAIL_SPRITE;
+            document.getElementById('incubator').style.borderColor = "#f87171";
+            document.getElementById('timer').innerText = "ERROR";
+            document.getElementById('timer').style.color = "#f87171";
+            
             document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('ecoBtn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'inline-block';
+            document.getElementById('screen-click-trigger').style.display = 'none';
             
-            if(document.body.classList.contains('eco-mode')) {
-                document.body.classList.remove('eco-mode');
-                document.getElementById('eco-overlay').style.display = 'none';
-            }
+            if(document.body.classList.contains('eco-mode')) document.body.classList.remove('eco-mode');
             if (wakeLock) wakeLock.release();
         }
 
         function forceReset() {
-            localStorage.setItem('soulLock_state', 'IDLE');
-            location.reload(); // Seite neu laden für einen sauberen Neustart
+            localStorage.setItem('pet151_state', 'IDLE');
+            location.reload();
+        }
+
+        function savePet(url) {
+            let myPets = JSON.parse(localStorage.getItem('my_retro_pokemon')) || [];
+            myPets.push(url);
+            localStorage.setItem('my_retro_pokemon', JSON.stringify(myPets));
+            updateCollectionUI();
+        }
+
+        function updateCollectionUI() {
+            let myPets = JSON.parse(localStorage.getItem('my_retro_pokemon')) || [];
+            const listDiv = document.getElementById('petList');
+            listDiv.innerHTML = "";
+            
+            myPets.forEach(url => {
+                const img = document.createElement('img');
+                img.className = 'pet-icon';
+                img.src = url;
+                listDiv.appendChild(img);
+            });
         }
     </script>
 </body>
