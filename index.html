@@ -2,82 +2,174 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon Ei-Brüter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SoulLock</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding-top: 50px; }
-        #egg { font-size: 80px; margin: 20px; transition: all 0.5s; }
-        .status { font-weight: bold; font-size: 20px; }
-        .alive { color: green; }
-        .dead { color: red; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            text-align: center; 
+            background: #0a0a0f; 
+            color: #e0e0e6;
+            padding-top: 60px; 
+            margin: 0;
+            overflow: hidden;
+        }
+        h1 { font-weight: 300; letter-spacing: 2px; color: #a182ff; }
+        p { color: #7a7a8c; font-size: 14px; padding: 0 20px; }
+        
+        /* Die pulsierende Seelen-Aura */
+        #aura-container {
+            width: 200px;
+            height: 200px;
+            margin: 40px auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #aura { 
+            font-size: 70px; 
+            z-index: 2;
+            transition: all 0.5s;
+        }
+        .glow-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #5a3eff;
+            box-shadow: 0 0 20px #5a3eff, inset 0 0 20px #5a3eff;
+            animation: pulse 3s infinite ease-in-out;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.8; box-shadow: 0 0 30px #913eff, inset 0 0 15px #913eff; border-color: #913eff; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        
+        .status { font-weight: bold; font-size: 18px; margin-top: 20px; letter-spacing: 1px; }
+        .alive { color: #5effa3; }
+        .dead { color: #ff5e5e; }
+        
+        #timer { font-size: 32px; font-weight: 200; margin-top: 10px; color: #ffffff; }
+        
+        button {
+            background: #251b4e;
+            color: #a182ff;
+            border: 1px solid #5a3eff;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        button:hover { background: #34257c; color: #ffffff; }
     </style>
 </head>
 <body>
 
-    <h1>Pokémon Fokus-Brüter</h1>
-    <p>Lass das Handy liegen. Wenn du die App wechselst, schlägt das Ausbrüten fehl!</p>
+    <h1>SOUL LOCK</h1>
+    <p id="instruction">Starte das Ritual. Wenn du die App aktiv wechselst, bricht deine Seele und der Fortschritt geht verloren.</p>
     
-    <div id="egg">🥚</div>
-    <div id="statusText" class="status alive">Das Ei wird warm gehalten...</div>
-    <div id="timer" style="font-size: 24px; margin-top: 20px;">Verbleibende Zeit: 10:00</div>
+    <div id="aura-container">
+        <div id="glow" class="glow-ring"></div>
+        <div id="aura">🔒</div>
+    </div>
+    
+    <div id="statusText" class="status">Bereit für das Ritual...</div>
+    <div id="timer">10:00</div>
+    
+    <button id="startBtn" onclick="startRitual()">Ritual Starten</button>
 
     <script>
-        let duration = 600; // 10 Minuten in Sekunden
+        let duration = 600; // 10 Minuten
         let lastTime = Date.now();
-        let eggBroken = false;
+        let isRunning = false;
+        let isShattered = false;
         let wakeLock = null;
 
-        // 1. Bildschirm wach halten
-        async function requestWakeLock() {
+        // Echter Klick schaltet den iOS-Wachhalter frei
+        async function startRitual() {
+            if (isRunning || isShattered) return;
+            
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
                 }
             } catch (err) {
-                console.log("Wake Lock konnte nicht aktiviert werden.");
+                console.log("Wake Lock vom System blockiert.");
             }
-        }
-        requestWakeLock();
 
-        // Haupt-Timer (Prüft jede Sekunde)
+            isRunning = true;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('glow').style.opacity = '1';
+            document.getElementById('aura').innerText = '✨';
+            document.getElementById('statusText').innerText = "Seele fixiert. Nicht ablenken lassen...";
+            document.getElementById('statusText').className = "status alive";
+            lastTime = Date.now();
+        }
+
+        // Timer läuft jede Sekunde
         const countdown = setInterval(() => {
-            if (eggBroken) return;
+            if (!isRunning || isShattered) return;
 
             const currentTime = Date.now();
-            // Check 1: Wurde das JavaScript im Hintergrund pausiert? (Zeitsprung > 2 Sekunden)
-            if (currentTime - lastTime > 2000) {
-                failHatching("Du hast das Spiel im Hintergrund pausiert!");
-                return;
-            }
+            const timePassed = currentTime - lastTime;
             lastTime = currentTime;
 
-            // Zeit herunterzählen
+            // WICHTIG: Wenn der Zeitsprung riesig ist (> 5 Sek), war das Handy vermutlich im automatischen iOS-Sperrzustand. 
+            // In dem Fall pausieren wir das Spiel nur, anstatt es unfair zu zerstören.
+            if (timePassed > 5000) {
+                pauseRitual();
+                return;
+            }
+
             duration--;
             let minutes = Math.floor(duration / 60);
             let seconds = duration % 60;
-            document.getElementById('timer').innerText = `Verbleibende Zeit: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            document.getElementById('timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
             if (duration <= 0) {
                 clearInterval(countdown);
-                document.getElementById('egg').innerText = '🐣🎉';
-                document.getElementById('statusText').innerText = "Glückwunsch! Dein Pokémon ist geschlüpft!";
+                document.getElementById('aura').innerText = '🔮';
+                document.getElementById('statusText').innerText = "Erfolgreich! Deine Seele ist gestärkt.";
+                document.getElementById('glow').style.borderColor = "#5effa3";
+                document.getElementById('glow').style.boxShadow = "0 0 30px #5effa3";
+                if (wakeLock) wakeLock.release();
             }
         }, 1000);
 
-        // Check 2: Sichtbarkeit des Tabs hat sich geändert (Tab gewechselt / App minimiert)
+        // Harte Bestrafung NUR, wenn der Nutzer aktiv den Tab wechselt oder die App minimiert
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && !eggBroken) {
-                failHatching("Du hast die Webseite verlassen!");
+            if (document.visibilityState === 'hidden' && isRunning && !isShattered) {
+                // Wenn die App minimiert wird, während sie aktiv läuft -> Bestrafung!
+                shatterSoul("Du bist abgeschweift!");
             }
         });
 
-        // Funktion für das Fehlschlagen
-        function failHatching(reason) {
-            eggBroken = true;
+        function pauseRitual() {
+            isRunning = false;
+            document.getElementById('aura').innerText = '⏳';
+            document.getElementById('statusText').innerText = "Ritual pausiert (Bildschirm war aus).";
+            document.getElementById('statusText').className = "status";
+            document.getElementById('glow').style.opacity = '0';
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('startBtn').innerText = "Ritual fortsetzen";
+            if (wakeLock) wakeLock.release();
+        }
+
+        function shatterSoul(reason) {
+            isShattered = true;
+            isRunning = false;
             clearInterval(countdown);
-            document.getElementById('egg').innerText = '🍳❌';
-            document.getElementById('statusText').innerText = `Fehlgeschlagen: ${reason}`;
+            document.getElementById('aura').innerText = '💥';
+            document.getElementById('statusText').innerText = `Gebrochen: ${reason}`;
             document.getElementById('statusText').className = "status dead";
+            document.getElementById('glow').style.borderColor = "#ff5e5e";
+            document.getElementById('glow').style.boxShadow = "0 0 30px #ff5e5e";
             if (wakeLock) wakeLock.release();
         }
     </script>
