@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SoulLock Pokedex</title>
     <style>
-        @import url('https://googleapis.com');
-
-        body { 
-            font-family: 'Press Start 2P', monospace; 
-            text-align: center; 
-            background: #05070f; 
-            color: #38bdf8; 
+        body {
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+            background: #05070f;
+            color: #38bdf8;
             margin: 0;
             padding: 0;
             overflow: hidden;
             user-select: none;
-            -webkit-user-select: none; 
+            -webkit-user-select: none;
         }
 
         /* 1. STARTBILDSCHIRM: Das 2x2 Retro-Grid */
@@ -29,12 +27,14 @@
             box-sizing: border-box;
             padding: 20px;
         }
+
         .grid-2x2 {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             max-width: 260px;
         }
+
         .grid-cell {
             width: 100px;
             height: 100px;
@@ -45,19 +45,22 @@
             justify-content: center;
             position: relative;
         }
+
         .grid-cell img {
             width: 85px;
             height: 85px;
             image-rendering: pixelated;
         }
+
         /* Highlight für das zuletzt gefangene Pokémon */
         .grid-cell.latest-catch {
             border-color: #4ade80 !important;
             animation: highlight-pulse 1.5s infinite ease-in-out;
         }
+
         @keyframes highlight-pulse {
-            0% { box-shadow: 0 0 5px #4ade80; }
-            50% { box-shadow: 0 0 20px #4ade80; }
+            0%   { box-shadow: 0 0 5px #4ade80; }
+            50%  { box-shadow: 0 0 20px #4ade80; }
             100% { box-shadow: 0 0 5px #4ade80; }
         }
 
@@ -65,36 +68,46 @@
         #overlay-screen {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: #05070f;
             z-index: 100;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
+
         #incubator {
-            width: 160px; height: 160px;
+            width: 160px;
+            height: 160px;
             background: #0f172a;
             border: 4px solid #38bdf8;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         #overlaySprite {
-            width: 120px; height: 120px;
+            width: 120px;
+            height: 120px;
             image-rendering: pixelated;
         }
-        #timer { 
-            font-size: 32px; 
-            margin-top: 30px; 
-            color: #38bdf8; 
+
+        #timer {
+            font-size: 32px;
+            margin-top: 30px;
+            color: #38bdf8;
         }
 
         /* Dimm-Zustand für OLED-Modus */
         body.eco-mode #overlay-screen { background: #000000 !important; }
-        body.eco-mode #timer { opacity: 0 !important; }
-        body.eco-mode #incubator { 
-            transform: scale(0.45); 
+        body.eco-mode #timer          { opacity: 0 !important; }
+        body.eco-mode #incubator {
+            transform: scale(0.45);
             background: transparent !important;
             border-color: rgba(56, 189, 248, 0.2) !important;
             box-shadow: none !important;
@@ -103,9 +116,10 @@
         body.eco-mode #overlaySprite {
             filter: brightness(0) invert(1) drop-shadow(0 0 4px #38bdf8);
         }
+
         @keyframes pulse-eco {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
+            0%   { opacity: 0.6; }
+            50%  { opacity: 1; }
             100% { opacity: 0.6; }
         }
     </style>
@@ -128,21 +142,21 @@
     </div>
 
     <script>
-        // Pokedex-Reihenfolge der 4 Test-Pokémon (Jetzt korrekt gefüllt)
-        const DEX_IDS =;
+        // Pokedex-Reihenfolge der 4 Test-Pokémon
+        const DEX_IDS = [1, 4, 7, 25];
 
         let duration = 10; // Test-Timer
         let lastTime = Date.now();
-        
+
         // Spielzustände: 'IDLE', 'RUNNING', 'ECO', 'SUCCESS', 'FAILED'
-        let gameState = 'IDLE'; 
+        let gameState = 'IDLE';
         let currentRewardId = null;
         let wakeLock = null;
         let countdownInterval = null;
 
         window.addEventListener('load', () => {
             renderPokedexGrid();
-            
+
             // Schutz-Check bei versehentlichem Schließen
             const savedState = localStorage.getItem('soul_state');
             if (savedState === 'RUNNING' || savedState === 'ECO') {
@@ -160,7 +174,7 @@
             DEX_IDS.forEach(id => {
                 const cell = document.createElement('div');
                 cell.className = 'grid-cell';
-                
+
                 // Highlight für das allerletzte gebrütete Pokémon
                 if (latestCatch && parseInt(latestCatch) === id) {
                     cell.classList.add('latest-catch');
@@ -168,11 +182,11 @@
 
                 const img = document.createElement('img');
                 if (caughtList.includes(id)) {
-                    img.src = `${id}.png`; // Gefangen -> Vorderseite
+                    img.src = `${id}.png`;   // Gefangen -> Vorderseite
                 } else {
-                    img.src = "0.png"; // Nicht gefangen -> Fragezeichen
+                    img.src = "0.png";       // Nicht gefangen -> Fragezeichen
                 }
-                
+
                 cell.appendChild(img);
                 gridContainer.appendChild(cell);
             });
@@ -185,9 +199,13 @@
             gameState = 'RUNNING';
             localStorage.setItem('soul_state', 'RUNNING');
             duration = 10;
-            
+
             // Bildschirm-Wachhalter anfordern
-            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {}
 
             document.getElementById('overlay-screen').style.display = 'flex';
             document.getElementById('overlaySprite').src = "egg.png";
@@ -225,51 +243,7 @@
         function updateTimerDisplay() {
             let minutes = Math.floor(duration / 60);
             let seconds = duration % 60;
-            document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            document.getElementById('timer').innerText =
+                `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }
 
-        // Klick-Logik im laufenden oder beendeten Zustand innerhalb des Overlays
-        function handleOverlayClick() {
-            if (gameState === 'RUNNING') {
-                // Wechsel in den OLED-Dimm-Modus
-                gameState = 'ECO';
-                localStorage.setItem('soul_state', 'ECO');
-                document.body.classList.add('eco-mode');
-            } 
-            else if (gameState === 'ECO') {
-                // Zurück in den normalen Brutmodus
-                gameState = 'RUNNING';
-                localStorage.setItem('soul_state', 'RUNNING');
-                document.body.classList.remove('eco-mode');
-                lastTime = Date.now(); // Zeit-Resync
-            } 
-            else if (gameState === 'SUCCESS' || gameState === 'FAILED') {
-                // Beendet das Overlay und kehrt zum aktualisierten Grid zurück
-                closeOverlayAndReset();
-            }
-        }
-
-        function triggerSuccess() {
-            clearInterval(countdownInterval);
-            gameState = 'SUCCESS';
-            localStorage.setItem('soul_state', 'SUCCESS');
-
-            // Zufälliges Pokémon aus den 4 Testoptionen ziehen
-            currentRewardId = DEX_IDS[Math.floor(Math.random() * DEX_IDS.length)];
-            
-            // In der Sammlung im localStorage speichern
-            let caughtList = JSON.parse(localStorage.getItem('caught_ids')) || [];
-            if (!caughtList.includes(currentRewardId)) {
-                caughtList.push(currentRewardId);
-                localStorage.setItem('caught_ids', JSON.stringify(caughtList));
-            }
-            // Als letzten Fang für das Highlight markieren
-            localStorage.setItem('latest_catch_id', currentRewardId);
-
-            // Visuelles Feedback (Erfolg)
-            document.getElementById('overlaySprite').src = `${currentRewardId}.png`;
-            document.getElementById('incubator').style.borderColor = "#4ade80";
-            document.getElementById('timer').innerText = "✓";
-            
-            if (document.body.classList.contains('eco-mode')) {
-document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}function shatterEgg() {clearInterval(countdownInterval);gameState = 'FAILED';localStorage.setItem('soul_state', 'FAILED');// Zieht ein zufälliges Monster, um dessen Rückseite als Strafe zu zeigencurrentRewardId = DEX_IDS[Math.floor(Math.random() * DEX_IDS.length)];// Visuelles Feedback (Fehlschlag, Zeit bleibt stehen)document.getElementById('overlaySprite').src = ${currentRewardId}_back.png;document.getElementById('incubator').style.borderColor = "#f87171";if (document.body.classList.contains('eco-mode')) {document.body.classList.remove('eco-mode');}if (wakeLock) wakeLock.release();}// Trigger, falls die App im Hintergrund abgewürgt wurdefunction triggerCheatFail() {document.getElementById('overlay-screen').style.display = 'flex';shatterEgg();document.getElementById('timer').innerText = "✕";}function closeOverlayAndReset() {gameState = 'IDLE';localStorage.setItem('soul_state', 'IDLE');document.getElementById('overlay-screen').style.display = 'none';renderPokedexGrid(); // Grid neu aufbauen}// Erkennt App-Wechsel sofortdocument.addEventListener('visibilitychange', () => {if (document.visibilityState === 'hidden' && (gameState === 'RUNNING' || gameState === 'ECO')) {shatterEgg();}});
