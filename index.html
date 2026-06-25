@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PokeZen</title>
 
-    <!-- Web App Meta -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PokeZen">
     <meta name="theme-color" content="#000000">
 
-    <!-- Home-Screen Icon -->
-    <link rel="apple-touch-icon" href="pokezen-icon.png">
-    <link rel="icon" href="pokezen-icon.png">
+    pokezen-icon.png
+    pokezen-icon.png
 
     <style>
         body {
@@ -29,7 +27,6 @@
             -webkit-user-select: none;
         }
 
-        /* 1. STARTBILDSCHIRM: Das 2x2 Retro-Grid */
         #pokedex-screen {
             display: flex;
             flex-direction: column;
@@ -68,6 +65,14 @@
             display: block;
         }
 
+        /* Pokébälle etwas kleiner darstellen */
+        .grid-cell img.is-ball,
+        #overlaySprite.is-ball {
+            width: 70%;
+            height: 70%;
+            margin: auto;
+        }
+
         .grid-cell.latest-catch {
             border-color: #4ade80 !important;
             animation: highlight-pulse 1.5s infinite ease-in-out;
@@ -79,7 +84,6 @@
             100% { box-shadow: 0 0 5px #4ade80; }
         }
 
-        /* 2. OVERLAY als Modal */
         #overlay-screen {
             display: none;
             position: fixed;
@@ -181,12 +185,16 @@
             100% { opacity: 0.6; }
         }
 
-        /* DIMM-Modus + Erfolg: grünliches Pulsieren am gefangenen Pokémon */
+        /* DIMM + Erfolg: weißes Pokémon mit grünem Schimmer */
         body.eco-mode.eco-success #incubator {
             animation: none;
         }
         body.eco-mode.eco-success #overlaySprite {
-            filter: drop-shadow(0 0 8px #4ade80) drop-shadow(0 0 16px #4ade80);
+            filter:
+                brightness(0) invert(1)
+                drop-shadow(0 0 6px #4ade80)
+                drop-shadow(0 0 14px #4ade80)
+                drop-shadow(0 0 22px rgba(74, 222, 128, 0.6));
             animation: pulse-eco-success 1.4s infinite ease-in-out;
         }
         @keyframes pulse-eco-success {
@@ -198,15 +206,13 @@
 </head>
 <body>
 
-    <!-- Start-Screen mit Pokedex-Raster -->
     <div id="pokedex-screen" onclick="openOverlayForHatching()">
         <div class="grid-2x2" id="pokedexGrid"></div>
     </div>
 
-    <!-- Modal-Overlay -->
     <div id="overlay-screen" onclick="handleOverlayClick()">
         <div id="incubator">
-            <img id="overlaySprite" src="poke-ball.png" alt="status">
+            poke-ball.png
         </div>
         <div id="timer">00:10</div>
         <button id="resetBtn" onclick="resetGame(event)">Reset?</button>
@@ -219,7 +225,6 @@
         let duration = 10;
         let lastTime = Date.now();
 
-        // 'IDLE', 'RUNNING', 'ECO', 'SUCCESS', 'FAILED', 'RESET_PROMPT'
         let gameState = 'IDLE';
         let currentRewardId = null;
         let wakeLock = null;
@@ -255,6 +260,7 @@
                 } else {
                     img.src = BALL_SRC;
                     img.alt = "pokeball";
+                    img.classList.add('is-ball');
                 }
                 cell.appendChild(img);
                 gridContainer.appendChild(cell);
@@ -277,9 +283,10 @@
 
         function setSprite(src, { wiggle = false } = {}) {
             const sprite = document.getElementById('overlaySprite');
-            if (!sprite) return; // Defensive: falls Element noch nicht im DOM
+            if (!sprite) return;
             sprite.src = src;
             sprite.classList.toggle('wiggle', wiggle);
+            sprite.classList.toggle('is-ball', src === BALL_SRC);
         }
 
         async function openOverlayForHatching() {
