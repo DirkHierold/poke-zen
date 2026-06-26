@@ -195,7 +195,6 @@
             border-color: transparent !important;
             box-shadow: none !important;
         }
-        /* Pokeball/Pokemon im Dimm: weiße Silhouette + Puls (kein Wackeln, kein Schimmer) */
         body.eco-mode #overlaySprite {
             filter: brightness(0) invert(1);
             animation: pulse-eco-success 1.6s infinite ease-in-out;
@@ -206,7 +205,6 @@
             transform-origin: center !important;
         }
 
-        /* DIMM + Erfolg: zusätzlich grüner Schimmer */
         body.eco-mode.eco-success #overlaySprite {
             filter:
                 brightness(0) invert(1)
@@ -231,7 +229,7 @@
 
     <div id="overlay-screen" onclick="handleOverlayClick()">
         <div id="incubator">
-            poke-ball.png
+            <img id="overlaySprite" src="poke-ball.png" alt="status">
         </div>
         <div id="overlayLabel"></div>
         <div id="timer">00:10</div>
@@ -323,7 +321,6 @@
             return uncaught[Math.floor(Math.random() * uncaught.length)];
         }
 
-        // Preload-basierter Sprite-Wechsel: kein Größensprung beim Schlüpfen
         function setSprite(src, { wiggle = false } = {}) {
             const sprite = document.getElementById('overlaySprite');
             if (!sprite) return;
