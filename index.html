@@ -44,7 +44,6 @@
             max-width: 320px;
             justify-items: center;
         }
-        /* Pikachu allein zentriert in eigener Reihe */
         .grid-3xN .grid-item.solo {
             grid-column: 2;
         }
@@ -205,30 +204,23 @@
             background: transparent !important;
             border-color: transparent !important;
             box-shadow: none !important;
+            animation: none !important;
         }
+        /* Pokeball/Pokemon im Dimm: nur weiße Silhouette, KEINE Pulsanimation */
         body.eco-mode #overlaySprite {
             filter: brightness(0) invert(1);
-            animation: pulse-eco-success 1.6s infinite ease-in-out;
+            animation: none;
             transform-origin: center !important;
         }
+        /* Pokeball waehrend RUNNING im Dimm: weiterhin wackelnd */
         body.eco-mode #overlaySprite.wiggle {
-            animation: pulse-eco-success 1.6s infinite ease-in-out;
-            transform-origin: center !important;
+            animation: wiggle 1s infinite ease-in-out;
+            transform-origin: 50% 80% !important;
         }
-
+        /* Erfolg im Dimm: nur weiße Silhouette, KEIN Schimmer, KEIN Puls */
         body.eco-mode.eco-success #overlaySprite {
-            filter:
-                brightness(0) invert(1)
-                drop-shadow(0 0 6px #4ade80)
-                drop-shadow(0 0 14px #4ade80)
-                drop-shadow(0 0 22px rgba(74, 222, 128, 0.6));
-            animation: pulse-eco-success 1.4s infinite ease-in-out;
-        }
-
-        @keyframes pulse-eco-success {
-            0%   { opacity: 0.7; transform: scale(1); }
-            50%  { opacity: 1;   transform: scale(1.12); }
-            100% { opacity: 0.7; transform: scale(1); }
+            filter: brightness(0) invert(1);
+            animation: none;
         }
     </style>
 </head>
@@ -248,9 +240,8 @@
     </div>
 
     <script>
-        // Reihenfolge bestimmt das Layout: 3er-Reihen + Pikachu solo
         const DEX_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 25];
-        const SOLO_IDS = [25]; // wird in eigener Reihe zentriert
+        const SOLO_IDS = [25];
         const BALL_SRC = "poke-ball.png";
 
         const POKEMON_NAMES = {
@@ -266,8 +257,6 @@
             25: 'Pikachu'
         };
 
-        // Voraussetzungs-Mapping: Schluessel kann nur gebrütet werden,
-        // wenn Wert bereits gefangen ist.
         const EVOLUTION_FROM = {
             2: 1, 3: 2,
             5: 4, 6: 5,
@@ -283,12 +272,18 @@
         let countdownInterval = null;
 
         window.addEventListener('load', () => {
+            renderPokedexGrid();
+
             const savedState = localStorage.getItem('soul_state');
-            if (savedState === 'RUNNING' || savedState === 'ECO') {
-                localStorage.setItem('soul_state', 'IDLE');
+            const savedReward = parseInt(localStorage.getItem('current_reward_id'));
+
+            // App wurde im laufenden/dimm Zustand gekillt -> Fail anzeigen
+            if ((savedState === 'RUNNING' || savedState === 'ECO') && savedReward) {
+                currentRewardId = savedReward;
+                triggerCheatFail();
+                return;
             }
             gameState = 'IDLE';
-            renderPokedexGrid();
         });
 
         function labelFor(id) {
@@ -358,7 +353,6 @@
         function pickRewardId() {
             const caughtList = getCaughtList();
             const uncaught = DEX_IDS.filter(id => !caughtList.includes(id));
-            // Nur Pokemon, deren Voraussetzung erfüllt ist
             const eligible = uncaught.filter(id => isEligible(id, caughtList));
 
             if (eligible.length > 0) {
@@ -387,8 +381,10 @@
             preload.src = src;
         }
 
-        function setOverlayLabel(text) {
-            document.getElementById('overlayLabel').innerText = text || '';
+        function setOverlayLabel(text, color) {
+            const el = document.getElementById('overlayLabel');
+            el.innerText = text || '';
+            el.style.color = color || '#4ade80';
         }
 
         async function openOverlayForHatching() {
@@ -400,6 +396,7 @@
             }
 
             currentRewardId = pickRewardId();
+            localStorage.setItem('current_reward_id', currentRewardId);
 
             gameState = 'RUNNING';
             localStorage.setItem('soul_state', 'RUNNING');
@@ -510,7 +507,7 @@
             localStorage.setItem('latest_catch_id', currentRewardId);
 
             setSprite(`${currentRewardId}.png`, { wiggle: false });
-            setOverlayLabel(labelFor(currentRewardId));
+            setOverlayLabel(labelFor(currentRewardId), '#4ade80');
             document.getElementById('incubator').style.borderColor = "#4ade80";
             document.getElementById('timer').style.color = "#4ade80";
 
@@ -549,8 +546,13 @@
             gameState = 'FAILED';
             localStorage.setItem('soul_state', 'FAILED');
 
-            setSprite(`${currentRewardId}_back.png`, { wiggle: false });
-            setOverlayLabel('');
+            if (currentRewardId) {
+                setSprite(`${currentRewardId}_back.png`, { wiggle: false });
+                setOverlayLabel(labelFor(currentRewardId), '#f87171');
+            } else {
+                setSprite(BALL_SRC, { wiggle: false });
+                setOverlayLabel('', '#f87171');
+            }
             document.getElementById('incubator').style.borderColor = "#f87171";
             document.getElementById('timer').style.color = "#f87171";
 
@@ -561,9 +563,21 @@
             if (wakeLock) wakeLock.release();
         }
 
+        // App wurde im RUNNING/ECO Zustand gekillt -> Fail-Overlay beim naechsten Start
+        function triggerCheatFail() {
+            document.getElementById('overlay-screen').style.display = 'flex';
+            document.getElementById('timer').style.display = "block";
+            document.getElementById('resetBtn').style.display = "none";
+            // Dimm-Klassen sicher entfernen
+            document.body.classList.remove('eco-mode');
+            document.body.classList.remove('eco-success');
+            shatterEgg();
+        }
+
         function closeOverlayAndReset() {
             gameState = 'IDLE';
             localStorage.setItem('soul_state', 'IDLE');
+            localStorage.removeItem('current_reward_id');
             document.getElementById('overlay-screen').style.display = 'none';
             document.body.classList.remove('eco-mode');
             document.body.classList.remove('eco-success');
