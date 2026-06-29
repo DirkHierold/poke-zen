@@ -69,17 +69,17 @@
         }
 
         .grid-cell img {
-            width: 100%;
-            height: 100%;
+            width: 80%;
+            height: 80%;
+            margin: auto;
             object-fit: contain;
-            image-rendering: pixelated;
             display: block;
         }
 
         .grid-cell img.is-ball,
         #overlaySprite.is-ball {
-            width: 70%;
-            height: 70%;
+            width: 60%;
+            height: 60%;
             margin: auto;
         }
 
@@ -139,10 +139,10 @@
         }
 
         #overlaySprite {
-            width: 100%;
-            height: 100%;
+            width: 82%;
+            height: 82%;
+            margin: auto;
             object-fit: contain;
-            image-rendering: pixelated;
             display: block;
         }
 
@@ -241,7 +241,6 @@
         const SOLO_IDS = [25];
         const BALL_SRC = "poke-ball.png";
 
-        // Sprite-Pfade fuer die Showdown-GIFs
         const SPRITE_DIR = "showdown";
         const BACK_DIR   = "showdown/back";
         const frontSprite = (id) => `${SPRITE_DIR}/${id}.gif`;
