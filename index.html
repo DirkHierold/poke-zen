@@ -206,18 +206,15 @@
             box-shadow: none !important;
             animation: none !important;
         }
-        /* Pokeball/Pokemon im Dimm: nur weiße Silhouette, KEINE Pulsanimation */
         body.eco-mode #overlaySprite {
             filter: brightness(0) invert(1);
             animation: none;
             transform-origin: center !important;
         }
-        /* Pokeball waehrend RUNNING im Dimm: weiterhin wackelnd */
         body.eco-mode #overlaySprite.wiggle {
             animation: wiggle 1s infinite ease-in-out;
             transform-origin: 50% 80% !important;
         }
-        /* Erfolg im Dimm: nur weiße Silhouette, KEIN Schimmer, KEIN Puls */
         body.eco-mode.eco-success #overlaySprite {
             filter: brightness(0) invert(1);
             animation: none;
@@ -243,6 +240,12 @@
         const DEX_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 25];
         const SOLO_IDS = [25];
         const BALL_SRC = "poke-ball.png";
+
+        // Sprite-Pfade fuer die Showdown-GIFs
+        const SPRITE_DIR = "showdown";
+        const BACK_DIR   = "showdown/back";
+        const frontSprite = (id) => `${SPRITE_DIR}/${id}.gif`;
+        const backSprite  = (id) => `${BACK_DIR}/${id}.gif`;
 
         const POKEMON_NAMES = {
             1:  'Bisasam',
@@ -277,7 +280,6 @@
             const savedState = localStorage.getItem('soul_state');
             const savedReward = parseInt(localStorage.getItem('current_reward_id'));
 
-            // App wurde im laufenden/dimm Zustand gekillt -> Fail anzeigen
             if ((savedState === 'RUNNING' || savedState === 'ECO') && savedReward) {
                 currentRewardId = savedReward;
                 triggerCheatFail();
@@ -324,7 +326,7 @@
 
                 const img = document.createElement('img');
                 if (caught) {
-                    img.src = `${id}.png`;
+                    img.src = frontSprite(id);
                     img.alt = labelFor(id);
                 } else {
                     img.src = BALL_SRC;
@@ -506,7 +508,7 @@
             }
             localStorage.setItem('latest_catch_id', currentRewardId);
 
-            setSprite(`${currentRewardId}.png`, { wiggle: false });
+            setSprite(frontSprite(currentRewardId), { wiggle: false });
             setOverlayLabel(labelFor(currentRewardId), '#4ade80');
             document.getElementById('incubator').style.borderColor = "#4ade80";
             document.getElementById('timer').style.color = "#4ade80";
@@ -547,7 +549,7 @@
             localStorage.setItem('soul_state', 'FAILED');
 
             if (currentRewardId) {
-                setSprite(`${currentRewardId}_back.png`, { wiggle: false });
+                setSprite(backSprite(currentRewardId), { wiggle: false });
                 setOverlayLabel(labelFor(currentRewardId), '#f87171');
             } else {
                 setSprite(BALL_SRC, { wiggle: false });
@@ -563,12 +565,10 @@
             if (wakeLock) wakeLock.release();
         }
 
-        // App wurde im RUNNING/ECO Zustand gekillt -> Fail-Overlay beim naechsten Start
         function triggerCheatFail() {
             document.getElementById('overlay-screen').style.display = 'flex';
             document.getElementById('timer').style.display = "block";
             document.getElementById('resetBtn').style.display = "none";
-            // Dimm-Klassen sicher entfernen
             document.body.classList.remove('eco-mode');
             document.body.classList.remove('eco-success');
             shatterEgg();
