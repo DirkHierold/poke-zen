@@ -15,51 +15,52 @@
     <link rel="icon" type="image/png" href="pokezen-icon.png">
 
     <style>
+        html, body {
+            background: #05070f;
+        }
         body {
             font-family: monospace;
             text-align: center;
-            background: #05070f;
             color: #38bdf8;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
+        }
+        body.overlay-open {
+            overflow: hidden;
+            height: 100vh;
         }
 
         #pokedex-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             box-sizing: border-box;
-            padding: 16px;
+            padding: 16px 16px 40px 16px;
         }
 
-        .grid-3xN {
+        .grid-4xN {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-width: 320px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 310px;
             justify-items: center;
-        }
-        .grid-3xN .grid-item.solo {
-            grid-column: 2;
         }
 
         .grid-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
 
         .grid-cell {
-            width: 80px;
-            height: 80px;
+            width: 65px;
+            height: 65px;
             background: #0f172a;
-            border: 3px solid #1e293b;
+            border: 2px solid #1e293b;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -78,8 +79,8 @@
 
         .grid-cell img.is-ball,
         #overlaySprite.is-ball {
-            width: 60%;
-            height: 60%;
+            width: 55%;
+            height: 55%;
             margin: auto;
         }
 
@@ -89,11 +90,14 @@
         }
 
         .grid-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #38bdf8;
             text-align: center;
             white-space: nowrap;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
+            max-width: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .grid-label.locked { opacity: 0.4; }
 
@@ -224,7 +228,7 @@
 <body>
 
     <div id="pokedex-screen" onclick="openOverlayForHatching()">
-        <div class="grid-3xN" id="pokedexGrid"></div>
+        <div class="grid-4xN" id="pokedexGrid"></div>
     </div>
 
     <div id="overlay-screen" onclick="handleOverlayClick()">
@@ -237,8 +241,8 @@
     </div>
 
     <script>
-        const DEX_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 25];
-        const SOLO_IDS = [25];
+        const DEX_IDS = Array.from({length: 151}, (_, i) => i + 1);
+        const SOLO_IDS = [];
         const BALL_SRC = "poke-ball.png";
 
         const SPRITE_DIR = "showdown";
@@ -247,22 +251,232 @@
         const backSprite  = (id) => `${BACK_DIR}/${id}.gif`;
 
         const POKEMON_NAMES = {
-            1:  'Bisasam',
-            2:  'Bisaknosp',
-            3:  'Bisaflor',
-            4:  'Glumanda',
-            5:  'Glutexo',
-            6:  'Glurak',
-            7:  'Schiggy',
-            8:  'Schillok',
-            9:  'Turtok',
-            25: 'Pikachu'
+            1: 'Bisasam',
+            2: 'Bisaknosp',
+            3: 'Bisaflor',
+            4: 'Glumanda',
+            5: 'Glutexo',
+            6: 'Glurak',
+            7: 'Schiggy',
+            8: 'Schillok',
+            9: 'Turtok',
+            10: 'Raupy',
+            11: 'Safcon',
+            12: 'Smettbo',
+            13: 'Hornliu',
+            14: 'Kokuna',
+            15: 'Bibor',
+            16: 'Taubsi',
+            17: 'Tauboga',
+            18: 'Tauboss',
+            19: 'Rattfratz',
+            20: 'Rattikarl',
+            21: 'Habitak',
+            22: 'Ibitak',
+            23: 'Rettan',
+            24: 'Arbok',
+            25: 'Pikachu',
+            26: 'Raichu',
+            27: 'Sandan',
+            28: 'Sandamer',
+            29: 'Nidoran♀',
+            30: 'Nidorina',
+            31: 'Nidoqueen',
+            32: 'Nidoran♂',
+            33: 'Nidorino',
+            34: 'Nidoking',
+            35: 'Piepi',
+            36: 'Pixi',
+            37: 'Vulpix',
+            38: 'Vulnona',
+            39: 'Pummeluff',
+            40: 'Knuddeluff',
+            41: 'Zubat',
+            42: 'Golbat',
+            43: 'Myrapla',
+            44: 'Duflor',
+            45: 'Giflor',
+            46: 'Paras',
+            47: 'Parasek',
+            48: 'Bluzuk',
+            49: 'Omot',
+            50: 'Digda',
+            51: 'Digdri',
+            52: 'Mauzi',
+            53: 'Snobilikat',
+            54: 'Enton',
+            55: 'Entoron',
+            56: 'Menki',
+            57: 'Rasaff',
+            58: 'Fukano',
+            59: 'Arkani',
+            60: 'Quapsel',
+            61: 'Quaputzi',
+            62: 'Quappo',
+            63: 'Abra',
+            64: 'Kadabra',
+            65: 'Simsala',
+            66: 'Machollo',
+            67: 'Maschock',
+            68: 'Machomei',
+            69: 'Knofensa',
+            70: 'Ultrigaria',
+            71: 'Sarzenia',
+            72: 'Tentacha',
+            73: 'Tentoxa',
+            74: 'Kleinstein',
+            75: 'Georok',
+            76: 'Geowaz',
+            77: 'Ponita',
+            78: 'Gallopa',
+            79: 'Flegmon',
+            80: 'Lahmus',
+            81: 'Magnetilo',
+            82: 'Magneton',
+            83: 'Porenta',
+            84: 'Dodu',
+            85: 'Dodri',
+            86: 'Jurob',
+            87: 'Jugong',
+            88: 'Sleima',
+            89: 'Sleimok',
+            90: 'Muschas',
+            91: 'Austos',
+            92: 'Nebulak',
+            93: 'Alpollo',
+            94: 'Gengar',
+            95: 'Onix',
+            96: 'Traumato',
+            97: 'Hypno',
+            98: 'Krabby',
+            99: 'Kingler',
+            100: 'Voltobal',
+            101: 'Lektrobal',
+            102: 'Owei',
+            103: 'Kokowei',
+            104: 'Tragosso',
+            105: 'Knogga',
+            106: 'Kicklee',
+            107: 'Nockchan',
+            108: 'Schlurp',
+            109: 'Smogon',
+            110: 'Smogmog',
+            111: 'Rihorn',
+            112: 'Rizeros',
+            113: 'Chaneira',
+            114: 'Tangela',
+            115: 'Kangama',
+            116: 'Seeper',
+            117: 'Seemon',
+            118: 'Goldini',
+            119: 'Golking',
+            120: 'Sterndu',
+            121: 'Starmie',
+            122: 'Pantimos',
+            123: 'Sichlor',
+            124: 'Rossana',
+            125: 'Elektek',
+            126: 'Magmar',
+            127: 'Pinsir',
+            128: 'Tauros',
+            129: 'Karpador',
+            130: 'Garados',
+            131: 'Lapras',
+            132: 'Ditto',
+            133: 'Evoli',
+            134: 'Aquana',
+            135: 'Blitza',
+            136: 'Flamara',
+            137: 'Porygon',
+            138: 'Amonitas',
+            139: 'Amoroso',
+            140: 'Kabuto',
+            141: 'Kabutops',
+            142: 'Aerodactyl',
+            143: 'Relaxo',
+            144: 'Arktos',
+            145: 'Zapdos',
+            146: 'Lavados',
+            147: 'Dratini',
+            148: 'Dragonir',
+            149: 'Dragoran',
+            150: 'Mewtu',
+            151: 'Mew'
         };
 
         const EVOLUTION_FROM = {
-            2: 1, 3: 2,
-            5: 4, 6: 5,
-            8: 7, 9: 8
+            2: 1,
+            3: 2,
+            5: 4,
+            6: 5,
+            8: 7,
+            9: 8,
+            11: 10,
+            12: 11,
+            14: 13,
+            15: 14,
+            17: 16,
+            18: 17,
+            20: 19,
+            22: 21,
+            24: 23,
+            26: 25,
+            28: 27,
+            30: 29,
+            31: 30,
+            33: 32,
+            34: 33,
+            36: 35,
+            38: 37,
+            40: 39,
+            42: 41,
+            44: 43,
+            45: 44,
+            47: 46,
+            49: 48,
+            51: 50,
+            53: 52,
+            55: 54,
+            57: 56,
+            59: 58,
+            61: 60,
+            62: 61,
+            64: 63,
+            65: 64,
+            67: 66,
+            68: 67,
+            70: 69,
+            71: 70,
+            73: 72,
+            75: 74,
+            76: 75,
+            78: 77,
+            80: 79,
+            82: 81,
+            85: 84,
+            87: 86,
+            89: 88,
+            91: 90,
+            93: 92,
+            94: 93,
+            97: 96,
+            99: 98,
+            101: 100,
+            103: 102,
+            105: 104,
+            110: 109,
+            112: 111,
+            117: 116,
+            119: 118,
+            121: 120,
+            130: 129,
+            134: 133,
+            135: 133,
+            136: 133,
+            139: 138,
+            141: 140,
+            148: 147,
+            149: 148
         };
 
         let duration = 10;
@@ -272,6 +486,15 @@
         let currentRewardId = null;
         let wakeLock = null;
         let countdownInterval = null;
+
+        function showOverlay() {
+            document.getElementById('overlay-screen').style.display = 'flex';
+            document.body.classList.add('overlay-open');
+        }
+        function hideOverlay() {
+            document.getElementById('overlay-screen').style.display = 'none';
+            document.body.classList.remove('overlay-open');
+        }
 
         window.addEventListener('load', () => {
             renderPokedexGrid();
@@ -311,7 +534,6 @@
             DEX_IDS.forEach(id => {
                 const item = document.createElement('div');
                 item.className = 'grid-item';
-                if (SOLO_IDS.includes(id)) item.classList.add('solo');
 
                 const cell = document.createElement('div');
                 cell.className = 'grid-cell';
@@ -409,7 +631,7 @@
                 }
             } catch (err) {}
 
-            document.getElementById('overlay-screen').style.display = 'flex';
+            showOverlay();
             setSprite(BALL_SRC, { wiggle: true });
             setOverlayLabel('');
             document.getElementById('incubator').style.borderColor = "#38bdf8";
@@ -424,7 +646,7 @@
 
         function openResetPrompt() {
             gameState = 'RESET_PROMPT';
-            document.getElementById('overlay-screen').style.display = 'flex';
+            showOverlay();
             setSprite(BALL_SRC, { wiggle: false });
             setOverlayLabel('');
             document.getElementById('incubator').style.borderColor = "#38bdf8";
@@ -565,7 +787,7 @@
         }
 
         function triggerCheatFail() {
-            document.getElementById('overlay-screen').style.display = 'flex';
+            showOverlay();
             document.getElementById('timer').style.display = "block";
             document.getElementById('resetBtn').style.display = "none";
             document.body.classList.remove('eco-mode');
@@ -577,7 +799,7 @@
             gameState = 'IDLE';
             localStorage.setItem('soul_state', 'IDLE');
             localStorage.removeItem('current_reward_id');
-            document.getElementById('overlay-screen').style.display = 'none';
+            hideOverlay();
             document.body.classList.remove('eco-mode');
             document.body.classList.remove('eco-success');
             document.getElementById('resetBtn').style.display = "none";
