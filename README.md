@@ -31,15 +31,17 @@ PokeZen uses the smartphone browser's background limitations as a harsh gameplay
 
 ---
 
-## 🚀 Asset Structure
+## 🚀 Development & Assets
 
-To make PokeZen work flawlessly offline on iOS, place your assets directly in the root directory alongside your `index.html`:
+Built with Vite, React, TypeScript, Tailwind CSS 4 and shadcn/ui (same stack as MathFeed). The header offers a light/dark theme toggle.
 
-- `0.png` — The mystery/locked placeholder for the grid.
-- `egg.png` — Your custom Pokéball graphic used during incubation.
-- `fail.png` — The broken/error asset.
-- `[id].png` — Front sprites of your monsters (e.g., `1.png`, `4.png`, `7.png`, `25.png`).
-- `[id]_back.png` — Back sprites shown upon failure (e.g., `1_back.png`, `4_back.png`).
+```bash
+npm install
+npm run dev     # local dev server
+npm run build   # type-check + production build
+```
+
+Static assets live in `public/`: `poke-ball.png`, `pokezen-icon.png`, `showdown/[id].gif` (front sprites) and `showdown/back/[id].gif` (back sprites shown on failure).
 
 ---
 
