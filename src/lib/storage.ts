@@ -7,7 +7,13 @@ export type SoulState =
   | "RESET_PROMPT"
   | "VIEW"
 
-export const SESSION_SECONDS = 25 * 60
+// Dev-only test mode: active on the dev server (10s timer, prefilled Pokedex); add ?notest to disable
+export const TEST_MODE =
+  import.meta.env.DEV && !new URLSearchParams(location.search).has("notest")
+
+export const SESSION_SECONDS = TEST_MODE ? 10 : 25 * 60
+
+const TEST_CAUGHT = [1, 2, 4, 7, 10, 25, 39, 52, 54, 133]
 
 const KEYS = {
   state: "soul_state",
@@ -15,6 +21,12 @@ const KEYS = {
   caught: "caught_ids",
   latest: "latest_catch_id",
 } as const
+
+export function seedTestCaught() {
+  if (!TEST_MODE || getCaught().length) return
+  localStorage.setItem(KEYS.caught, JSON.stringify(TEST_CAUGHT))
+  localStorage.setItem(KEYS.latest, String(TEST_CAUGHT[TEST_CAUGHT.length - 1]))
+}
 
 export function getCaught(): number[] {
   try {
@@ -60,3 +72,5 @@ export function getReward(): number | null {
   const v = parseInt(localStorage.getItem(KEYS.reward) ?? "")
   return Number.isNaN(v) ? null : v
 }
+
+seedTestCaught()

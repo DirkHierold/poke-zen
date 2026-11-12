@@ -79,6 +79,7 @@ export function usePokeZen() {
   const [viewId, setViewId] = useState<number | null>(null)
   const [seconds, setSeconds] = useState(SESSION_SECONDS)
   const [dim, setDim] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const [caught, setCaught] = useState(getCaught)
   const [latest, setLatest] = useState(getLatest)
 
@@ -105,6 +106,7 @@ export function usePokeZen() {
   const fail = useCallback(() => {
     update("FAILED")
     setDim(false)
+    setLeaving(false)
     releaseWakeLock()
   }, [update])
 
@@ -129,6 +131,16 @@ export function usePokeZen() {
     }
   }, [update])
 
+  const requestLeave = useCallback(() => {
+    if (gameRef.current === "ECO") {
+      setDim(false)
+      lastTime.current = Date.now()
+      update("RUNNING")
+    }
+    setLeaving(true)
+  }, [update])
+  const cancelLeave = useCallback(() => setLeaving(false), [])
+
   const view = useCallback((id: number) => {
     if (gameRef.current !== "IDLE") return
     gameRef.current = "VIEW"
@@ -142,6 +154,7 @@ export function usePokeZen() {
     setRewardId(null)
     setViewId(null)
     setDim(false)
+    setLeaving(false)
     setCaught(getCaught())
     setLatest(getLatest())
   }, [update])
@@ -195,25 +208,21 @@ export function usePokeZen() {
   const tap = useCallback(() => {
     switch (gameRef.current) {
       case "RUNNING":
+        if (leaving) return
         setDim(true)
         update("ECO")
         break
       case "ECO":
+        if (leaving) return
         setDim(false)
         lastTime.current = Date.now()
         update("RUNNING")
         break
       case "SUCCESS":
         if (dim) setDim(false)
-        else close()
-        break
-      case "FAILED":
-      case "RESET_PROMPT":
-      case "VIEW":
-        close()
         break
     }
-  }, [dim, update, close])
+  }, [dim, leaving, update])
 
   return {
     game,
@@ -221,11 +230,16 @@ export function usePokeZen() {
     viewId,
     seconds,
     dim,
+    leaving,
     caught,
     latest,
     start,
     view,
     tap,
     reset,
+    close,
+    requestLeave,
+    cancelLeave,
+    fail,
   }
 }

@@ -19,7 +19,7 @@ export function App() {
         </main>
         <footer className="shrink-0 border-t p-4 pb-[max(env(safe-area-inset-bottom),1rem)]">
           <Button size="lg" className="w-full" onClick={zen.start}>
-            Ausbrüten
+            Fangen
           </Button>
         </footer>
       </div>
@@ -27,11 +27,16 @@ export function App() {
         <SessionOverlay
           game={zen.game}
           dim={zen.dim}
+          leaving={zen.leaving}
           rewardId={zen.rewardId}
           viewId={zen.viewId}
           seconds={zen.seconds}
           onTap={zen.tap}
           onReset={zen.reset}
+          onLeave={zen.requestLeave}
+          onStay={zen.cancelLeave}
+          onFlee={zen.fail}
+          onClose={zen.close}
         />
       )}
     </div>

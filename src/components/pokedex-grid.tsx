@@ -30,7 +30,7 @@ export function PokedexGrid({
             <Card
               className={cn(
                 "aspect-square w-full items-center justify-center p-0",
-                id === latest && "animate-pulse border-success ring-2 ring-success/50"
+                id === latest && "border-success ring-2 ring-success/50"
               )}
             >
               <img
