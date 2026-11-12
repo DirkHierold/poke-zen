@@ -32,9 +32,9 @@ export function SessionOverlay({
   const showMon = (failed || success) && id
   const src = showMon
     ? failed
-      ? `/showdown/back/${id}.gif`
-      : `/showdown/${id}.gif`
-    : "/poke-ball.png"
+      ? `${import.meta.env.BASE_URL}showdown/back/${id}.gif`
+      : `${import.meta.env.BASE_URL}showdown/${id}.gif`
+    : `${import.meta.env.BASE_URL}poke-ball.png`
   const tone = failed
     ? "text-destructive"
     : success

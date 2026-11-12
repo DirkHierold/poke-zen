@@ -34,7 +34,7 @@ export function PokedexGrid({
               )}
             >
               <img
-                src={isCaught ? `/showdown/${id}.gif` : "/poke-ball.png"}
+                src={isCaught ? `${import.meta.env.BASE_URL}showdown/${id}.gif` : `${import.meta.env.BASE_URL}poke-ball.png`}
                 alt={isCaught ? label(id) : "Pokéball"}
                 loading="lazy"
                 className={cn(

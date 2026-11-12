@@ -36,7 +36,7 @@ export function Header() {
   return (
     <header className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2">
       <div className="flex items-center gap-2">
-        <img src="/pokezen-icon.png" alt="" className="size-8 rounded-md" />
+        <img src={`${import.meta.env.BASE_URL}pokezen-icon.png`} alt="" className="size-8 rounded-md" />
         <h1 className="text-xl font-semibold">PokeZen</h1>
       </div>
       <ThemeToggle />
