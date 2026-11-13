@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react"
+
 import { Card } from "@/components/ui/card"
 import { isEligible } from "@/hooks/use-pokezen"
 import { DEX_IDS, POKEMON_NAMES } from "@/lib/pokemon"
@@ -14,6 +16,16 @@ export function PokedexGrid({
   latest: number | null
   onView: (id: number) => void
 }) {
+  const latestRef = useRef<HTMLButtonElement>(null)
+
+  // The grid stays mounted under the overlay, so it is already scrolled when the user returns.
+  const prevLatest = useRef(latest)
+  useEffect(() => {
+    if (prevLatest.current === latest) return
+    prevLatest.current = latest
+    latestRef.current?.scrollIntoView({ block: "center" })
+  }, [latest])
+
   return (
     <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
       {DEX_IDS.map((id) => {
@@ -22,6 +34,7 @@ export function PokedexGrid({
         return (
           <button
             key={id}
+            ref={id === latest ? latestRef : undefined}
             type="button"
             disabled={!isCaught}
             onClick={() => onView(id)}

@@ -170,6 +170,8 @@ export function usePokeZen() {
       addCaught(id)
       setCaught(getCaught())
       setLatest(id)
+      setDim(false)
+      setLeaving(false)
       if (wasDim) celebrateInEco()
       releaseWakeLock()
     },
@@ -218,11 +220,8 @@ export function usePokeZen() {
         lastTime.current = Date.now()
         update("RUNNING")
         break
-      case "SUCCESS":
-        if (dim) setDim(false)
-        break
     }
-  }, [dim, leaving, update])
+  }, [leaving, update])
 
   return {
     game,
