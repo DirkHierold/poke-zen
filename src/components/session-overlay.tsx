@@ -91,7 +91,7 @@ export function SessionOverlay({
       className={cn(
         "fixed inset-0 z-50 flex flex-col items-center",
         // OLED eco mode: pure black regardless of theme
-        dim ? "bg-black" : "bg-background"
+        dim ? "dark bg-black text-foreground" : "bg-background"
       )}
     >
       {!dim && (
@@ -147,7 +147,8 @@ export function SessionOverlay({
       <footer
         className={cn(
           "flex w-full max-w-3xl shrink-0 gap-2 border-t p-4 pb-[max(env(safe-area-inset-bottom),1rem)]",
-          dim && "border-white/30 [&_button]:border-white/40 [&_button]:bg-transparent [&_button]:text-white"
+          // opaque equivalents of the dark-theme tokens over --background, so lines match on pure black
+          dim && "border-[oklch(0.23_0_0)] [&_button]:!border-[oklch(0.273_0_0)] [&_button]:!bg-[oklch(0.18_0_0)]"
         )}
       >
         {game === "ECO" && (
